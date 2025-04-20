@@ -1,6 +1,6 @@
 # Fichiers dependants de l OS
-scripts
 build
+vscode.code-workspace
 
 # Prerequisites
 *.d
