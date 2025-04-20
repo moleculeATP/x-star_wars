@@ -1,3 +1,7 @@
+# Fichiers dependants de l OS
+scripts
+build
+
 # Prerequisites
 *.d
 
