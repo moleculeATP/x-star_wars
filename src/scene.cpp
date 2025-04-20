@@ -1,5 +1,3 @@
-
-
 #include "scene.hpp"
 
 using namespace cgp;
@@ -23,8 +21,11 @@ void scene_structure::initialize()
 		{0,0,1} /* direction of the "up" vector */);
 	
 
-	// parametre controle camera mode val
+	// parametre controle camera mode combat
 	camera_control.speed = 0.4f;
+	camera_control.speed_increase = 1.02f;
+	camera_control.speed_max = 1.2f;
+	camera_control.speed_min = 0.4f;
 
 
 	display_info();
@@ -66,7 +67,7 @@ void scene_structure::initialize()
 	// x-wing
     xwing.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/x-wing3.obj"));
 	xwing.material.color = { 0.4, 0.7, 0.3 };
-	xwing.model.scaling = 0.01f;
+	xwing.model.scaling = 0.005f;
 	xwing.model.translation = {0, 0, 2.f};
 
 
@@ -129,7 +130,17 @@ void scene_structure::display_frame()
 	environment.uniform_generic.uniform_vec3["camera_pos"] = camera_control.camera_model.position();
 	//environment.uniform_generic.uniform_mat4["view"] = camera_control.camera_model.matrix_view();
 
+	vec3 xwing_position = camera_control.camera_model.position() + camera_control.camera_model.front();
+	vec3 front = normalize(camera_control.camera_model.front());
+	vec3 up_cam = normalize(camera_control.camera_model.up());
+	vec3 right = normalize(cross(up_cam, front));
+	vec3 up = cross(front, right);  // Recalculer up pour assurer l'orthogonalité
 
+	mat3 R = {right, up, front};
+
+
+	xwing.model.translation = xwing_position;
+	xwing.model.rotation = rotation_transform::from_matrix(R);
 
 	draw(xwing, environment);
 

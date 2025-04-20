@@ -192,7 +192,7 @@ window_structure standard_window_initialization()
 
 	// Create the window using GLFW
 	window_structure window;
-	window.create_window(window_width, window_height, "CGP Display", CGP_OPENGL_VERSION_MAJOR, CGP_OPENGL_VERSION_MINOR);
+	window.create_window(2*window_width, 2*window_height, "CGP Display", CGP_OPENGL_VERSION_MAJOR, CGP_OPENGL_VERSION_MINOR);
 
 
 	// Display information

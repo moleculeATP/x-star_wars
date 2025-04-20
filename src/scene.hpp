@@ -3,6 +3,7 @@
 
 #include "cgp/cgp.hpp"
 #include "environment.hpp"
+#include "camera_combat_mode/camera_combat_mode.hpp"
 
 // This definitions allow to use the structures: mesh, mesh_drawable, etc. without mentionning explicitly cgp::
 using cgp::mesh;
@@ -41,8 +42,8 @@ struct scene_structure : cgp::scene_inputs_generic {
 	input_devices inputs;                // Storage for inputs status (mouse, keyboard, window dimension)
 	gui_parameters gui;                  // Standard GUI element storage
 
-	// Special camera mode adapted to a fly mode
-	camera_controller_fly_mode camera_control;
+	// COMBAT MODE
+	camera_combat_mode camera_control;
 	
 	// ****************************** //
 	// Elements and shapes of the scene
