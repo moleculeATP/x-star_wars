@@ -16,17 +16,20 @@ void scene_structure::initialize()
 	//camera_control.set_rotation_axis_z(); // camera rotates around z-axis
 	//   look_at(camera_position, targeted_point, up_direction)
 	camera_control.look_at(
-		{ -4.0f, 6.0f, 1.5f } /* position of the camera in the 3D scene */,
-		{0,0,0} /* targeted point in 3D scene */,
-		{0,0,1} /* direction of the "up" vector */);
+		{-2.0f, 0.0f, 1.0f},
+		{0.0f, 0.0f, 0.0f},
+		{0.0f, 0.0f, 1.0f} // up direction
+	);
 	
-
+	
+	
+	/** 
 	// parametre controle camera mode combat
 	camera_control.speed = 0.4f;
 	camera_control.speed_increase = 1.02f;
 	camera_control.speed_max = 1.2f;
 	camera_control.speed_min = 0.4f;
-
+		*/
 
 	display_info();
 
@@ -61,14 +64,14 @@ void scene_structure::initialize()
 	// Camel: mesh_load_file_obj: read external obj file
 	camel.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/camel.obj"));
 	camel.material.color = { 0.8, 0.7, 0.3 };
-	camel.model.scaling = 0.03f;
+	camel.model.scaling = 0.1f;
 	camel.model.translation = { -1,1,0.5f };
 
 	// x-wing
     xwing.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/x-wing3.obj"));
 	xwing.material.color = { 0.4, 0.7, 0.3 };
-	xwing.model.scaling = 0.005f;
-	xwing.model.translation = {0, 0, 2.f};
+	xwing.model.scaling = 0.02f;
+	xwing.model.translation = {0, 0, 0};
 
 
 	// Sphere used to display the position of a light
@@ -130,6 +133,7 @@ void scene_structure::display_frame()
 	environment.uniform_generic.uniform_vec3["camera_pos"] = camera_control.camera_model.position();
 	//environment.uniform_generic.uniform_mat4["view"] = camera_control.camera_model.matrix_view();
 
+	/**
 	vec3 xwing_position = camera_control.camera_model.position() + camera_control.camera_model.front();
 	vec3 front = normalize(camera_control.camera_model.front());
 	vec3 up_cam = normalize(camera_control.camera_model.up());
@@ -141,8 +145,9 @@ void scene_structure::display_frame()
 
 	xwing.model.translation = xwing_position;
 	xwing.model.rotation = rotation_transform::from_matrix(R);
-
+	**/
 	draw(xwing, environment);
+
 
 	
 	// conditional display of the global frame (set via the GUI)

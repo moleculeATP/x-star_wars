@@ -19,7 +19,7 @@ struct gui_parameters {
 
 	vec3 light_color = { 1,1,1 };
 	vec3 brume_color = { 0.5, 0.5, 0. };
-	vec3 light_position = { -2, 2, 2 };
+	vec3 light_position = { 0, 0, 2 };
 
 	float ambiant = 0.3f;
 	float diffus = 0.8f;
@@ -44,6 +44,7 @@ struct scene_structure : cgp::scene_inputs_generic {
 
 	// COMBAT MODE
 	camera_combat_mode camera_control;
+	//camera_controller_orbit camera_control; 
 	
 	// ****************************** //
 	// Elements and shapes of the scene
