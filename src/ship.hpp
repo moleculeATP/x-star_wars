@@ -1,17 +1,19 @@
 #pragma once
 #include "cgp/cgp.hpp"
 
-using namespace cgp;
 
+namespace cgp{
 struct ship {
-    mesh_drawable body;
-    vec3 position = { 0,0,0 };
-    vec3 velocity = { 0,0,0 };
-    vec3 rotation = { 0,0,0 };
-    float speed = 0.1f;
+    mesh_drawable body;;
+    vec3 position;
+    vec3 velocity;
+    vec3 rotation;
+    float speed;
 
     // Constructeur
     ship(const mesh_drawable& body_init);
+    ship();
 
-    void draw(mesh_drawable const& drawable, environment_generic_structure const& environment);
+    void draw(environment_generic_structure const& environment);
 };
+}

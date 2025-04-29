@@ -148,7 +148,7 @@ void scene_structure::display_frame()
 	xwing.model.translation = xwing_position;
 	xwing.model.rotation = rotation_transform::from_matrix(R);
 	**/
-
+	xwing_ship.draw(environment);
 
 	
 	// conditional display of the global frame (set via the GUI)
