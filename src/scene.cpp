@@ -84,23 +84,23 @@ void scene_structure::initialize()
 
 
 	// Load the custom shader
-	opengl_shader_structure shader_custom;
-	shader_custom.load(
-		project::path + "shaders/shading_custom/shading_custom.vert.glsl",
-		project::path + "shaders/shading_custom/shading_custom.frag.glsl");
+	opengl_shader_structure shader_mesh;
+	shader_mesh.load(
+		project::path + "shaders/mesh/mesh.vert.glsl",
+		project::path + "shaders/mesh/mesh.frag.glsl");
 
 	// Affect the loaded shader to the mesh_drawable
-	camel.shader = shader_custom;
-	cube.shader = shader_custom;
-	sphere.shader = shader_custom;
-	ground.shader = shader_custom;
+	camel.shader = shader_mesh;
+	cube.shader = shader_mesh;
+	sphere.shader = shader_mesh;
+	ground.shader = shader_mesh;
 
 	opengl_shader_structure shader_xwing;
 	shader_xwing.load(
 		project::path + "shaders/shading_custom/xwing.vert.glsl",
 		project::path + "shaders/shading_custom/xwing.frag.glsl"
 	);
-	xwing.shader = shader_custom;
+	xwing.shader = shader_mesh;
 
 }
 
@@ -148,7 +148,7 @@ void scene_structure::display_frame()
 	xwing.model.translation = xwing_position;
 	xwing.model.rotation = rotation_transform::from_matrix(R);
 	**/
-	xwing_ship.draw(environment);
+	xwing_ship.draw(environment); //equivalent to draw(xwing, environment);
 
 	
 	// conditional display of the global frame (set via the GUI)

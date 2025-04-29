@@ -10,7 +10,6 @@ vscode.code-workspace
 *.slo
 *.lo
 *.o
-*.obj
 
 # Precompiled Headers
 *.gch
