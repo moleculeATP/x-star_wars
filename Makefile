@@ -2,7 +2,7 @@
 
 # This path should point to the CGP library depending on the current directory
 ## You may need to it in case you move the position of your directory
-PATH_TO_CGP = ../../cgp/library/
+PATH_TO_CGP = cgp/library/
 
 TARGET ?= 02b_opengl_shading #name of the executable
 SRC_DIRS ?= src/ $(PATH_TO_CGP)

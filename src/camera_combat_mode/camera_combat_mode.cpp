@@ -1,4 +1,4 @@
-#include "camera_combat_mode/camera_combat_mode.hpp"
+#include "camera_combat_mode.hpp"
 
 namespace cgp
 {
