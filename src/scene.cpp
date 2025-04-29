@@ -71,9 +71,9 @@ void scene_structure::initialize()
     xwing.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/x-wing3.obj"));
 	xwing.material.color = { 0.4, 0.7, 0.3 };
 	xwing.model.scaling = 0.02f;
-	xwing.model.translation = {0, 0, 0};
 
 	xwing_ship = ship(xwing);
+	xwing_ship.initialize(inputs, window);
 
 
 	// Sphere used to display the position of a light
@@ -148,6 +148,8 @@ void scene_structure::display_frame()
 	xwing.model.translation = xwing_position;
 	xwing.model.rotation = rotation_transform::from_matrix(R);
 	**/
+
+	xwing_ship.idle_frame();
 	xwing_ship.draw(environment); //equivalent to draw(xwing, environment);
 
 	

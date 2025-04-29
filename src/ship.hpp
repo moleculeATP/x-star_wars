@@ -1,14 +1,16 @@
 #pragma once
 #include "cgp/cgp.hpp"
 
-
-namespace cgp{
+namespace cgp {
 struct ship {
-    mesh_drawable body;;
-    vec3 position;
-    vec3 velocity;
+    mesh_drawable body;
+    vec3 velocity={1,0,0 };
     vec3 rotation;
-    float speed;
+
+    float up_speed=1.2f;
+    float roll_speed=1.2f;
+    float turn_speed=.8f;
+    float speed=.01f;
 
     // Pointers to the global state of the inputs (keyboard, mouse, etc)
     input_devices* inputs;
@@ -20,9 +22,11 @@ struct ship {
     ship(const mesh_drawable& body_init);
     ship();
 
+    void initialize(input_devices& inputs, window_structure& window);
+
     void draw(environment_generic_structure const& environment);
 
-    void idle_frame(mat4& camera_matrix_view);
+    void idle_frame();
 
 protected:
     bool is_cursor_trapped; // true = cursor captured (/infinite motion), false = cursor free
