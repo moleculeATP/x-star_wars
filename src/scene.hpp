@@ -2,6 +2,7 @@
 
 
 #include "cgp/cgp.hpp"
+#include "ship.hpp"
 #include "environment.hpp"
 #include "camera_combat_mode/camera_combat_mode.hpp"
 
@@ -59,6 +60,8 @@ struct scene_structure : cgp::scene_inputs_generic {
 
 	mesh_drawable sphere_light;
 	mesh_drawable xwing;
+
+	ship xwing_ship;
 
 
 

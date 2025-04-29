@@ -12,4 +12,6 @@ struct ship {
 
     // Constructeur
     ship(const mesh_drawable& body_init);
+
+    void draw(mesh_drawable const& drawable, environment_generic_structure const& environment);
 };

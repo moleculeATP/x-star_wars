@@ -73,6 +73,8 @@ void scene_structure::initialize()
 	xwing.model.scaling = 0.02f;
 	xwing.model.translation = {0, 0, 0};
 
+	xwing_ship = ship(xwing);
+
 
 	// Sphere used to display the position of a light
 	sphere_light.initialize_data_on_gpu(mesh_primitive_sphere(0.2f));
@@ -146,7 +148,6 @@ void scene_structure::display_frame()
 	xwing.model.translation = xwing_position;
 	xwing.model.rotation = rotation_transform::from_matrix(R);
 	**/
-	draw(xwing, environment);
 
 
 	

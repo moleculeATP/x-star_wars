@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../external/temp_CGP/library/cgp/19_camera_controller/camera_controller_first_person/camera_controller_first_person.hpp"
+#include "cgp/cgp.hpp"
 
 namespace cgp {
 
