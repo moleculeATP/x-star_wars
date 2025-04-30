@@ -4,13 +4,16 @@
 namespace cgp {
 struct ship {
     mesh_drawable body;
+    mesh_drawable arrow_up;
+    mesh_drawable arrow_velocity;
+
     vec3 velocity={1,0,0 };
-    vec3 rotation;
+    vec3 up={0,0,1 };
 
     float up_speed=1.2f;
     float roll_speed=1.2f;
     float turn_speed=.8f;
-    float speed=.01f;
+    float speed=.0f;
 
     // Pointers to the global state of the inputs (keyboard, mouse, etc)
     input_devices* inputs;

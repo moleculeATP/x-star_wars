@@ -174,13 +174,17 @@ void scene_structure::display_frame()
 
 	environment.background_color = gui.brume_color;
 
-	
+	if (gui.display_ship_arrow) {
+		draw(xwing_ship.arrow_up, environment);
+		draw(xwing_ship.arrow_velocity, environment);
+	}
 
 }
 
 void scene_structure::display_gui()
 {
 	ImGui::Checkbox("Frame", &gui.display_frame);
+	ImGui::Checkbox("ship_arrow", &gui.display_ship_arrow);
 	ImGui::Checkbox("Wireframe", &gui.display_wireframe);
 
 	ImGui::ColorEdit3("Light color", &gui.light_color[0]);

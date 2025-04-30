@@ -17,6 +17,7 @@ using cgp::timer_basic;
 struct gui_parameters {
 	bool display_frame = false;
 	bool display_wireframe = false;	
+	bool display_ship_arrow = false;
 
 	vec3 light_color = { 1,1,1 };
 	vec3 brume_color = { 0.5, 0.5, 0. };
