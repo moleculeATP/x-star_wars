@@ -6,14 +6,16 @@ struct ship {
     mesh_drawable body;
     mesh_drawable arrow_up;
     mesh_drawable arrow_velocity;
+    mesh_drawable arrow_left;
 
     vec3 velocity={1,0,0 };
     vec3 up={0,0,1 };
+    vec3 left={0, 1, 0 };
 
     float up_speed=1.2f;
     float roll_speed=1.2f;
     float turn_speed=.8f;
-    float speed=.0f;
+    float speed=.01f;
 
     // Pointers to the global state of the inputs (keyboard, mouse, etc)
     input_devices* inputs;

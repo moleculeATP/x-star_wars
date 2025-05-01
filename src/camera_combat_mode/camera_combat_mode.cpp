@@ -3,6 +3,7 @@
 namespace cgp
 {
 
+/**
 void camera_combat_mode::action_mouse_move(mat4& camera_matrix_view)
 {
 	// Preconditions
@@ -22,11 +23,30 @@ void camera_combat_mode::action_mouse_move(mat4& camera_matrix_view)
 
 	update(camera_matrix_view);
 }
+	**/
 
 
-void camera_combat_mode::idle_frame(mat4& camera_matrix_view)
+void camera_combat_mode::idle_frame(mat4& camera_matrix_view, ship& ship_to_control)
 {
 	// Preconditions
+	std::cout << "camera_combat_mode::idle_frame" << std::endl;
+	assert_cgp_no_msg(inputs != nullptr);
+	assert_cgp_no_msg(window != nullptr);
+
+	float const magnitude = inputs->time_interval;
+
+	std::cout << ship_to_control.body.model.translation << std::endl;
+	look_at(
+        ship_to_control.body.model.translation - ship_to_control.velocity + ship_to_control.up/3, // Camera position
+        ship_to_control.body.model.translation,                           // Target position
+        ship_to_control.up                                                // Up vector
+    );
+
+	camera_matrix_view = camera_model.matrix_view();
+
+
+	// Preconditions
+	/**
 	assert_cgp_no_msg(inputs != nullptr);
 	assert_cgp_no_msg(window != nullptr);
 	if (!is_active) return;
@@ -57,8 +77,9 @@ void camera_combat_mode::idle_frame(mat4& camera_matrix_view)
 	camera_model.manipulator_translate_front(speed * magnitude);
 
 	update(camera_matrix_view);
+	**/
+	
 }
-
 std::string camera_combat_mode::doc_usage() const
 {
 	std::string doc;

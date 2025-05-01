@@ -151,6 +151,7 @@ void scene_structure::display_frame()
 
 	xwing_ship.idle_frame();
 	xwing_ship.draw(environment); //equivalent to draw(xwing, environment);
+	idle_frame();
 
 	
 	// conditional display of the global frame (set via the GUI)
@@ -177,6 +178,7 @@ void scene_structure::display_frame()
 	if (gui.display_ship_arrow) {
 		draw(xwing_ship.arrow_up, environment);
 		draw(xwing_ship.arrow_velocity, environment);
+		draw(xwing_ship.arrow_left, environment);
 	}
 
 }
@@ -212,7 +214,8 @@ void scene_structure::keyboard_event()
 }
 void scene_structure::idle_frame()
 {
-	camera_control.idle_frame(environment.camera_view);
+	camera_control.idle_frame(environment.camera_view, xwing_ship);
+	
 }
 
 void scene_structure::display_info()
