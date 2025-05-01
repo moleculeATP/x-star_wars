@@ -107,6 +107,10 @@ void ship::idle_frame()
         arrow_velocity.model.rotation = rT * arrow_velocity.model.rotation;
         arrow_left.model.rotation = rT * arrow_left.model.rotation;
     }
+    if (inputs -> keyboard.is_pressed(GLFW_KEY_SPACE))
+        speed = std::min(speed * speed_increase, speed_max);
+    else
+        speed = std::max(speed / speed_increase, speed_min);
 
     // translation to velocity vector
     body.model.translation = body.model.translation + velocity * speed;
