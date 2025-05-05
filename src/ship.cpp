@@ -39,10 +39,17 @@ void ship::initialize(input_devices& inputs, window_structure& window)
     mesh arrow_left_mesh = mesh_primitive_cylinder(0.005f, {0, 0, 0}, left/2);
     arrow_left.initialize_data_on_gpu(arrow_left_mesh);
     arrow_left.material.color = {0, 1, 0};
+
+    // Creating animated part of wings
+    left_down_wing.initialize_data_on_gpu(mesh_primitive_quadrangle({0,0,0}, {1,0,0}, {1,1,0}, {0,1,0}));
+    hierarchy.add(body, "Vaisseau base");
+    hierarchy.add(left_down_wing, "Left down wing", "Vaisseau base", {0, -1, 0.5f});
 }
 
 void ship::draw(environment_generic_structure const& environment){
-    cgp::draw(body, environment);
+    hierarchy.update_local_to_global_coordinates();
+    cgp::draw(hierarchy, environment);
+    // cgp::draw(body, environment);
 }
 
 void ship::idle_frame()
@@ -93,7 +100,8 @@ void ship::idle_frame()
     if (inputs->keyboard.is_pressed(GLFW_KEY_A))
     {
         rotation_transform rT = rotation_transform::from_axis_angle(up, magnitude*turn_speed);
-        body.model.rotation = rT * body.model.rotation;
+        // body.model.rotation = rT * body.model.rotation;
+        hierarchy["Vaisseau base"].transform_local.rotation = rT * hierarchy["Vaisseau base"].transform_local.rotation;
         left = normalize(rT * left);
         velocity = normalize(rT * velocity);
         arrow_velocity.model.rotation = rT * arrow_velocity.model.rotation;
@@ -101,7 +109,8 @@ void ship::idle_frame()
     }
     if (inputs->keyboard.is_pressed(GLFW_KEY_D)){
         rotation_transform rT = rotation_transform::from_axis_angle(up, -magnitude*turn_speed);
-        body.model.rotation = rT * body.model.rotation;
+        // body.model.rotation = rT * body.model.rotation;
+        hierarchy["Vaisseau base"].transform_local.rotation = rT * hierarchy["Vaisseau base"].transform_local.rotation;
         left = normalize(rT * left);
         velocity = normalize(rT * velocity);
         arrow_velocity.model.rotation = rT * arrow_velocity.model.rotation;
@@ -113,16 +122,18 @@ void ship::idle_frame()
         speed = std::max(speed / speed_increase, speed_min);
 
     // translation to velocity vector
-    body.model.translation = body.model.translation + velocity * speed;
+    // body.model.translation = body.model.translation + velocity * speed;
+    hierarchy["Vaisseau base"].transform_local.translation = hierarchy["Vaisseau base"].transform_local.translation + velocity * speed;
 
     // make the velocity and up vector orthogonal (changing the up vector if necessary)
     vec3 left = normalize(cross(up, velocity));
     vec3 up = normalize(cross(velocity, left));  // Recalculer up pour assurer l'orthogonalité
 
     
-    
-    body.model.rotation = rotation_transform::from_frame_transform({1,0,0}, {0,0,1}, velocity, up);
+    // body.model.rotation = rotation_transform::from_frame_transform({1,0,0}, {0,0,1}, velocity, up);
+    hierarchy["Vaisseau base"].transform_local.rotation = rotation_transform::from_frame_transform({1,0,0}, {0,0,1}, velocity, up);
 
-
+    arrow_up.model.translation = hierarchy["Vaisseau base"].transform_local.translation;
+    arrow_left.model.translation = hierarchy["Vaisseau base"].transform_local.translation;
 }
 }

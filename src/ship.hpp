@@ -8,6 +8,12 @@ struct ship {
     mesh_drawable arrow_velocity;
     mesh_drawable arrow_left;
 
+    hierarchy_mesh_drawable hierarchy;
+    mesh_drawable left_up_wing;
+    mesh_drawable left_down_wing;
+    mesh_drawable right_up_wing;
+    mesh_drawable right_down_wing;
+
     vec3 velocity={1,0,0 };
     vec3 up={0,0,1 };
     vec3 left={0, 1, 0 };
