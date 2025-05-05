@@ -44,15 +44,19 @@ void scene_structure::initialize()
 
 	// Same process for the ground which is a plane 
 	//  A quadrangle is defined a plane with 4-extremal corners.
-	float L_ground = 20.0f;
+	int N = 10;
+	float L_ground = 10.0f;
 	float z_ground = -0.51f;
-	mesh ground_mesh = mesh_primitive_quadrangle(
+	mesh ground_mesh = mesh_primitive_grid(
 		{ -L_ground, -L_ground, z_ground },
 		{  L_ground, -L_ground, z_ground },
 		{  L_ground,  L_ground, z_ground },
-		{ -L_ground,  L_ground, z_ground });
+		{ -L_ground,  L_ground, z_ground },
+		N,
+		N);
 	ground.initialize_data_on_gpu(ground_mesh);
 	ground.material.color = { 0.6, 0.6, 0.6 };
+	ground.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/ground.png", GL_REPEAT, GL_REPEAT);
 
 	// A Sphere
 	mesh sphere_mesh = mesh_primitive_sphere();
