@@ -29,7 +29,6 @@ void camera_combat_mode::action_mouse_move(mat4& camera_matrix_view)
 void camera_combat_mode::idle_frame(mat4& camera_matrix_view, ship& ship_to_control)
 {
 	// Preconditions
-	std::cout << "camera_combat_mode::idle_frame" << std::endl;
 	assert_cgp_no_msg(inputs != nullptr);
 	assert_cgp_no_msg(window != nullptr);
 
