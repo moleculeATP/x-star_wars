@@ -9,21 +9,19 @@ struct ship {
     mesh_drawable arrow_left;
 
     hierarchy_mesh_drawable hierarchy;
-    mesh_drawable left_up_wing;
-    mesh_drawable left_down_wing;
-    mesh_drawable right_up_wing;
-    mesh_drawable right_down_wing;
+    mesh_drawable wing; // used 4 times 
 
     vec3 velocity={1,0,0 };
     vec3 up={0,0,1 };
     vec3 left={0, 1, 0 };
     vec3 angular_velocity = {0, 0, 0};
 
+    bool STOP = true;
     float up_speed=1.f;
     float roll_speed=1.2f;
     float turn_speed=.8f;
     float speed=.01f;
-    float speed_increase=1.1f;
+    float speed_increase=1.01f;
     float speed_max=0.03f;
     float speed_min=0.01f;
     float angular_speed=2.f;

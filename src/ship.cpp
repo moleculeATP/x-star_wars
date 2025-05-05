@@ -18,6 +18,7 @@ ship::ship()
     inputs = nullptr;
     window = nullptr;
     is_cursor_trapped = false;
+
 }
 
 void ship::initialize(input_devices& inputs, window_structure& window)
@@ -44,6 +45,11 @@ void ship::initialize(input_devices& inputs, window_structure& window)
     left_down_wing.initialize_data_on_gpu(mesh_primitive_quadrangle({0,0,0}, {1,0,0}, {1,1,0}, {0,1,0}));
     hierarchy.add(body, "Vaisseau base");
     hierarchy.add(left_down_wing, "Left down wing", "Vaisseau base", {0, -1, 0.5f});
+
+    if(STOP) {
+        speed = 0;
+        speed_min = 0;
+    }
 }
 
 void ship::draw(environment_generic_structure const& environment){
