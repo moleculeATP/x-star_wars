@@ -60,6 +60,47 @@ void ship::idle_frame()
 	assert_cgp_no_msg(window != nullptr);
 
 	float const magnitude = inputs->time_interval;
+    vec3 angular_acc = {0, 0, 0};  // valeur temporaire locale
+
+    if (inputs->keyboard.is_pressed(GLFW_KEY_Q)) // roll left
+        angular_acc += -roll_speed * velocity;
+    if (inputs->keyboard.is_pressed(GLFW_KEY_E)) // roll right
+        angular_acc +=  roll_speed * velocity;
+
+    if (inputs->keyboard.is_pressed(GLFW_KEY_W)) // pitch up
+        angular_acc += -up_speed * left;
+    if (inputs->keyboard.is_pressed(GLFW_KEY_S)) // pitch down
+        angular_acc +=  up_speed * left;
+
+    if (inputs->keyboard.is_pressed(GLFW_KEY_A)) // yaw left
+        angular_acc +=  turn_speed * up;
+    if (inputs->keyboard.is_pressed(GLFW_KEY_D)) // yaw right
+        angular_acc += -turn_speed * up;
+
+    angular_velocity += angular_acc * magnitude;
+    float angle = norm(angular_velocity) * magnitude;
+    if (angle > 0) {
+        vec3 axis = normalize(angular_velocity);
+        rotation_transform rT = rotation_transform::from_axis_angle(axis, angle);
+
+        up = normalize(rT * up);
+        left = normalize(rT * left);
+        velocity = normalize(rT * velocity);
+
+        arrow_velocity.model.rotation = rT * arrow_velocity.model.rotation;
+        arrow_up.model.rotation = rT * arrow_up.model.rotation;
+        arrow_left.model.rotation = rT * arrow_left.model.rotation;
+        body.model.rotation = rT * body.model.rotation;
+    }
+
+    angular_velocity *= amorti_angulaire; // par ex. 0.98
+
+
+
+
+
+
+    /**
     // roll
     if (inputs->keyboard.is_pressed(GLFW_KEY_Q))
     {
@@ -116,21 +157,25 @@ void ship::idle_frame()
         arrow_velocity.model.rotation = rT * arrow_velocity.model.rotation;
         arrow_left.model.rotation = rT * arrow_left.model.rotation;
     }
+    
+
+    // translation to velocity vector
+    // body.model.translation = body.model.translation + velocity * speed;
+    
+
+    // make the velocity and up vector orthogonal (changing the up vector if necessary)
+    vec3 left = normalize(cross(up, velocity));
+    vec3 up = normalize(cross(velocity, left));  // Recalculer up pour assurer l'orthogonalité
+    **/
+
     if (inputs -> keyboard.is_pressed(GLFW_KEY_SPACE))
         speed = std::min(speed * speed_increase, speed_max);
     else
         speed = std::max(speed / speed_increase, speed_min);
 
-    // translation to velocity vector
-    // body.model.translation = body.model.translation + velocity * speed;
-    hierarchy["Vaisseau base"].transform_local.translation = hierarchy["Vaisseau base"].transform_local.translation + velocity * speed;
-
-    // make the velocity and up vector orthogonal (changing the up vector if necessary)
-    vec3 left = normalize(cross(up, velocity));
-    vec3 up = normalize(cross(velocity, left));  // Recalculer up pour assurer l'orthogonalité
-
     
     // body.model.rotation = rotation_transform::from_frame_transform({1,0,0}, {0,0,1}, velocity, up);
+    hierarchy["Vaisseau base"].transform_local.translation = hierarchy["Vaisseau base"].transform_local.translation + velocity * speed;
     hierarchy["Vaisseau base"].transform_local.rotation = rotation_transform::from_frame_transform({1,0,0}, {0,0,1}, velocity, up);
 
     arrow_up.model.translation = hierarchy["Vaisseau base"].transform_local.translation;

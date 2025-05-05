@@ -17,6 +17,7 @@ struct ship {
     vec3 velocity={1,0,0 };
     vec3 up={0,0,1 };
     vec3 left={0, 1, 0 };
+    vec3 angular_velocity = {0, 0, 0};
 
     float up_speed=1.f;
     float roll_speed=1.2f;
@@ -25,6 +26,7 @@ struct ship {
     float speed_increase=1.1f;
     float speed_max=0.03f;
     float speed_min=0.01f;
+    float amorti_angulaire=0.96f;
 
     // Pointers to the global state of the inputs (keyboard, mouse, etc)
     input_devices* inputs;
