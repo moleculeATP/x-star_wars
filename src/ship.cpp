@@ -77,7 +77,7 @@ void ship::idle_frame()
     if (inputs->keyboard.is_pressed(GLFW_KEY_D)) // yaw right
         angular_acc += -turn_speed * up;
 
-    angular_velocity += angular_acc * magnitude;
+    angular_velocity += angular_speed * angular_acc * magnitude;
     float angle = norm(angular_velocity) * magnitude;
     if (angle > 0) {
         vec3 axis = normalize(angular_velocity);

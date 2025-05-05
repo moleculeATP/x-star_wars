@@ -35,8 +35,6 @@ void camera_combat_mode::idle_frame(mat4& camera_matrix_view, ship& ship_to_cont
 
 	float const magnitude = inputs->time_interval;
 
-	// std::cout << ship_to_control.body.model.translation << std::endl;
-	std::cout << ship_to_control.hierarchy["Vaisseau base"].transform_local.translation << std::endl;
 	
 	look_at(
         ship_to_control.hierarchy["Vaisseau base"].transform_local.translation - ship_to_control.velocity + ship_to_control.up/3, // Camera position

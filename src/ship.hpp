@@ -26,7 +26,9 @@ struct ship {
     float speed_increase=1.1f;
     float speed_max=0.03f;
     float speed_min=0.01f;
+    float angular_speed=2.f;
     float amorti_angulaire=0.96f;
+
 
     // Pointers to the global state of the inputs (keyboard, mouse, etc)
     input_devices* inputs;
