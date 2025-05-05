@@ -21,8 +21,6 @@ void scene_structure::initialize()
 		{0.0f, 0.0f, 1.0f} // up direction
 	);
 	
-	
-	
 	/** 
 	// parametre controle camera mode combat
 	camera_control.speed = 0.4f;
@@ -44,7 +42,7 @@ void scene_structure::initialize()
 
 	// Same process for the ground which is a plane 
 	//  A quadrangle is defined a plane with 4-extremal corners.
-	int N = 10;
+	int N = 30;
 	float L_ground = 10.0f;
 	float z_ground = -0.51f;
 	mesh ground_mesh = mesh_primitive_grid(
@@ -54,6 +52,11 @@ void scene_structure::initialize()
 		{ -L_ground,  L_ground, z_ground },
 		N,
 		N);
+	
+	numarray<vec2> uv = ground_mesh.uv;
+	for (int i = 0; i < ground_mesh.uv.size(); i++) {
+		ground_mesh.uv[i] = {N*uv[i][0], N*uv[i][1]};
+	}
 	ground.initialize_data_on_gpu(ground_mesh);
 	ground.material.color = { 0.6, 0.6, 0.6 };
 	ground.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/ground.png", GL_REPEAT, GL_REPEAT);
