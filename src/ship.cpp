@@ -42,9 +42,9 @@ void ship::initialize(input_devices& inputs, window_structure& window)
     arrow_left.material.color = {0, 1, 0};
 
     // Creating animated part of wings
-    left_down_wing.initialize_data_on_gpu(mesh_primitive_quadrangle({0,0,0}, {1,0,0}, {1,1,0}, {0,1,0}));
+    wing.initialize_data_on_gpu(mesh_primitive_quadrangle({0,0,0}, {1,0,0}, {1,1,0}, {0,1,0}));
     hierarchy.add(body, "Vaisseau base");
-    hierarchy.add(left_down_wing, "Left down wing", "Vaisseau base", {0, -1, 0.5f});
+    hierarchy.add(wing, "Left down wing", "Vaisseau base", {0, -1, 0.5f});
 
     if(STOP) {
         speed = 0;
