@@ -3,39 +3,61 @@
 
 using namespace cgp;
 
-mesh create_asteroid_mesh(float radius, int N) {
-    mesh asteroid = mesh_primitive_sphere(radius, {0,0,0}, N, N);
-    return asteroid;
+void asteroids::create_meshes(numarray<vec3> scales, int N) {
+	meshes.resize(N_asteroids);
+	drawables.resize(N_asteroids);
+	angular_velocities.resize(N_asteroids);
+	velocities.resize(N_asteroids);
+	positions.resize(N_asteroids);
+	scales = scales;
+	for (int i = 0; i < N_asteroids; i++) {
+    	meshes[i] = mesh_primitive_ellipsoid(scales[i], {0,0,0}, N, N);
+		positions[i] = {rand_uniform(-bound, bound)/2, rand_uniform(-bound, bound)/2, rand_uniform(-bound, bound)/2};
+		velocities[i] = {rand_uniform(-5, 5), rand_uniform(-5, 5), rand_uniform(-5, 5)};
+		angular_velocities[i] = {rand_uniform(-5, 5), rand_uniform(-5, 5), rand_uniform(-5, 5)};
+		drawables[i].model.translation = positions[i];
+	}
 }
 
-void update_asteroid(mesh& asteroid, mesh_drawable& asteroid_visual, float radius, int N, perlin_noise_parameters const& param) {
-    // Recompute the new vertices
-	for (int ku = 0; ku < N; ++ku) {
-		for (int kv = 0; kv < N; ++kv) {
-			
-			// Compute local parametric coordinates (u,v) \in [0,1]
-            const float u = ku/(N-1.0f);
-            const float v = kv/(N-1.0f);
 
-			int const idx = ku*N+kv;
-
-			// Compute the Perlin noise
-			float const noise =(1.0f + noise_perlin({u, v}, param.octave, param.persistency, param.frequency_gain)) / 2.0f;
-
-			// use the noise as height value
-            // vec3 normal = normalize(asteroid.position[idx]);
-            vec3 normal = asteroid.normal[idx];
-			asteroid.position[idx] += 0.1 * normal * noise;
-
-			// use also the noise as color value
-			asteroid.color[idx] = 0.3f*vec3(0,0.5f,0)+0.7f*vec3(1,1,1);
+void asteroids::update_asteroids() {
+	for (int k = 0; k < N_asteroids; k++) {
+		for (int i = 0; i < meshes[k].position.size(); i++) {
+			float const noise = noise_perlin(meshes[k].position[i], param.octave, param.persistency, param.frequency_gain);
+			vec3 normal = meshes[k].normal[i];
+			meshes[k].position[i] += normal * noise;
+			meshes[k].color[i] = vec3(88.0f/255.0f, 57.0f/255.0f, 39.0f/255.0f)*noise;
 		}
+		meshes[k].fill_empty_field();
+		meshes[k].normal_update();
+
+		drawables[k].vbo_position.update(meshes[k].position);
+		drawables[k].vbo_normal.update(meshes[k].normal);
+		drawables[k].vbo_color.update(meshes[k].color);
 	}
+}
 
-	// Update the normal of the mesh structure
-	asteroid.normal_update();
+void asteroids::idle_frame(float dt) {
+	for (int k = 0; k < N_asteroids; k++) {
+		vec3 velocity = velocities[k];
+		vec3 angular_velocity = angular_velocities[k];
 
-    asteroid_visual.vbo_position.update(asteroid.position);
-	asteroid_visual.vbo_normal.update(asteroid.normal);
-	asteroid_visual.vbo_color.update(asteroid.color);
+		vec3 translat = drawables[k].model.translation;
+		if (abs(translat[0]) > bound) drawables[k].model.translation = {-translat[0], translat[1], translat[2]};
+		if (abs(translat[1]) > bound) drawables[k].model.translation = {translat[0], -translat[1], translat[2]};
+		if (abs(translat[2]) > bound) drawables[k].model.translation = {translat[0], translat[1], -translat[2]};
+		
+
+		float angle = norm(angular_velocity) * dt;
+		vec3 axis = normalize(angular_velocity);
+        rotation_transform rT = rotation_transform::from_axis_angle(axis, angle);
+
+		drawables[k].model.rotation *= rT;
+		drawables[k].model.translation += velocity * dt;
+	}
+}
+
+void asteroids::initialize() {
+	for (int k = 0; k < N_asteroids; k++) 
+		drawables[k].initialize_data_on_gpu(meshes[k]);
 }

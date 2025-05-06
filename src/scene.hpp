@@ -63,11 +63,9 @@ struct scene_structure : cgp::scene_inputs_generic {
 	mesh_drawable sphere_light;
 	mesh_drawable xwing;
 
-	mesh asteroid;
-	mesh_drawable asteroid_drawable;
-	perlin_noise_parameters param;
-
 	ship xwing_ship;
+	asteroids asteroid_set;
+
 
 
 

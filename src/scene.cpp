@@ -3,6 +3,7 @@
 using namespace cgp;
 
 
+bool show_asteroids = true;
 
 // This function is called only once at the beginning of the program
 // This function can contain any complex operation that can be pre-computed once
@@ -38,11 +39,11 @@ void scene_structure::initialize()
 	// ********************************************** //
 	cube.initialize_data_on_gpu(mesh_primitive_cube(/*center*/{ 0,0,0 }, /*edge length*/ 1.0f));
 	cube.material.color = { 1,1,0 };  
-	cube.model.translation = { 1,1,0 }; 
+	cube.model.translation = { 1,3,0 }; 
 
 	// Same process for the ground which is a plane 
 	//  A quadrangle is defined a plane with 4-extremal corners.
-	int N = 30;
+	int N = 10;
 	float L_ground = 10.0f;
 	float z_ground = -0.51f;
 	mesh ground_mesh = mesh_primitive_grid(
@@ -77,10 +78,6 @@ void scene_structure::initialize()
 	// x-wing
 	mesh tmp = mesh_load_file_obj(project::path + "assets/text_texture.obj");
 
-
-
-
-
     xwing.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/text_texture.obj"));
 	xwing.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/test_3.png", GL_REPEAT, GL_REPEAT);
 	xwing.material.color = { 0.4, 0.7, 0.3 };
@@ -90,12 +87,18 @@ void scene_structure::initialize()
 	xwing_ship.initialize(inputs, window);
 
 	// Asteroid mesh
-	// int N_asteroid = 100;
-	// asteroid = create_asteroid_mesh(0.5f, N_asteroid);
-	// asteroid_drawable.initialize_data_on_gpu(asteroid);
-	// update_asteroid(asteroid, asteroid_drawable, 0.5f, N_asteroid, param);
-	// asteroid_drawable.model.translation = {4, 1, 1.5};
-
+	if (show_asteroids) {
+		int N_mesh = 100;
+		asteroid_set.N_asteroids = 26;
+		std::vector<vec3> scales = std::vector<vec3>(asteroid_set.N_asteroids, {rand_uniform(0.5, 1.5), rand_uniform(0.5, 1.5), rand_uniform(0.5, 1.5)});
+		asteroid_set.create_meshes(scales, N_mesh);
+		asteroid_set.initialize();
+		asteroid_set.update_asteroids();
+		for (int k = 0; k < asteroid_set.N_asteroids; k++) {
+			asteroid_set.drawables[k].vbo_color.update(asteroid_set.meshes[k].color);
+			asteroid_set.drawables[k].model.translation = asteroid_set.positions[k];
+		}
+	}
 
 	// Sphere used to display the position of a light
 	sphere_light.initialize_data_on_gpu(mesh_primitive_sphere(0.2f));
@@ -115,14 +118,19 @@ void scene_structure::initialize()
 	cube.shader = shader_mesh;
 	sphere.shader = shader_mesh;
 	ground.shader = shader_mesh;
-	// asteroid_drawable.shader = shader_mesh;
+	//asteroid_drawable.shader = shader_mesh;
 
-	opengl_shader_structure shader_xwing;
-	shader_xwing.load(
+	opengl_shader_structure shader_custom;
+	shader_custom.load(
 		project::path + "shaders/shading_custom/shading_custom.vert.glsl",
 		project::path + "shaders/shading_custom/shading_custom.frag.glsl"
 	);
-	xwing.shader = shader_mesh;
+	xwing.shader = shader_custom;
+
+	if (show_asteroids) {
+		for (int k = 0; k < asteroid_set.N_asteroids; k++) 
+			asteroid_set.drawables[k].shader = shader_custom; 
+	}
 
 }
 
@@ -132,7 +140,7 @@ void scene_structure::initialize()
 void scene_structure::display_frame()
 {
 	// Update time
-	timer.update();
+	float dt = timer.update();
 
 
 	// Set additional uniform parameters to the shader
@@ -175,6 +183,8 @@ void scene_structure::display_frame()
 	xwing_ship.draw(environment); //equivalent to draw(xwing, environment);
 	idle_frame();
 
+	if (show_asteroids) asteroid_set.idle_frame(dt);
+
 	
 	// conditional display of the global frame (set via the GUI)
 	if (gui.display_frame)
@@ -187,14 +197,21 @@ void scene_structure::display_frame()
 	draw(cube, environment);	
 	draw(sphere, environment);
 	draw(camel, environment);
-	// draw(asteroid_drawable, environment);
+	if (show_asteroids) {
+		for (int k = 0; k < asteroid_set.N_asteroids; k++) 
+			draw(asteroid_set.drawables[k], environment);
+	}
 
 	if (gui.display_wireframe) {
 		draw_wireframe(ground, environment);
 		draw_wireframe(sphere, environment);
 		draw_wireframe(cube, environment);
 		draw_wireframe(camel, environment);
-		// draw_wireframe(asteroid_drawable, environment);
+
+		if (show_asteroids) {
+			for (int k = 0; k < asteroid_set.N_asteroids; k++) 
+				draw_wireframe(asteroid_set.drawables[k], environment);
+		}
 	}
 
 	environment.background_color = gui.brume_color;
