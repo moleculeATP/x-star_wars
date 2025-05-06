@@ -46,8 +46,19 @@ void ship::initialize(input_devices& inputs, window_structure& window)
     mesh_drawable cockpit_1;
     cockpit_1.initialize_data_on_gpu(mesh_primitive_quadrangle({.2f,.1f,0}, {0.2f,-.1f,0}, {-0.2f,-.1f,0}, {-0.2f,.1f,0}));
 
+    // wings initialization
+    // we only need one wing, we will use it 4 times (the one stocked on wing is top right)
     hierarchy.add(body, "Vaisseau base");
-    //hierarchy.add(wing, "Left down wing", "Vaisseau base", {0, -.1, 0.05f});
+    hierarchy.add(wing, "Top right wing", "Vaisseau base", {0, -0.042f, 0.013f});
+
+    wing.model.scaling_xyz = {1, -1, 1};
+    hierarchy.add(wing, "Top left wing", "Vaisseau base", {0, 0.042f, 0.013f});
+
+    wing.model.scaling_xyz = {1, -1, -1};
+    hierarchy.add(wing, "Bottom left wing", "Vaisseau base", {0, 0.04f, -0.008f});
+
+    wing.model.scaling_xyz = {1, 1, -1};
+    hierarchy.add(wing, "Bottom right wing", "Vaisseau base", {0, -0.04f, -0.008f});
 
     if(STOP) {
         speed = 0;
@@ -178,15 +189,25 @@ void ship::idle_frame()
     vec3 up = normalize(cross(velocity, left));  // Recalculer up pour assurer l'orthogonalité
     **/
 
-    if (inputs -> keyboard.is_pressed(GLFW_KEY_SPACE))
+    if (inputs -> keyboard.is_pressed(GLFW_KEY_SPACE)){
         speed = std::min(speed * speed_increase, speed_max);
-    else
+        wing_angle = std::max(wing_angle - wing_speed * magnitude, wing_min_angle);
+    }
+    else{
         speed = std::max(speed / speed_increase, speed_min);
-
+        wing_angle = std::min(wing_angle + wing_speed * magnitude, wing_max_angle);
+    }
+    
+    
     
     // body.model.rotation = rotation_transform::from_frame_transform({1,0,0}, {0,0,1}, velocity, up);
     hierarchy["Vaisseau base"].transform_local.translation = hierarchy["Vaisseau base"].transform_local.translation + velocity * speed;
     hierarchy["Vaisseau base"].transform_local.rotation = rotation_transform::from_frame_transform({1,0,0}, {0,0,1}, velocity, up);
+
+    hierarchy["Top right wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, -wing_angle);
+    hierarchy["Top left wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, wing_angle);
+    hierarchy["Bottom left wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, -wing_angle);
+    hierarchy["Bottom right wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, wing_angle);
 
     arrow_up.model.translation = hierarchy["Vaisseau base"].transform_local.translation;
     arrow_left.model.translation = hierarchy["Vaisseau base"].transform_local.translation;

@@ -82,16 +82,6 @@ void scene_structure::initialize()
 	camel.model.scaling = 0.1f;
 	camel.model.translation = { -1,1,0.5f };
 
-	// x-wing
-	mesh tmp = mesh_load_file_obj(project::path + "assets/text_texture.obj");
-
-    xwing.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/text_texture.obj"));
-	xwing.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/test_3.png", GL_REPEAT, GL_REPEAT);
-	xwing.material.color = { 0.4, 0.7, 0.3 };
-	xwing.model.scaling = 0.02f;
-
-	xwing_ship = ship(xwing);
-	xwing_ship.initialize(inputs, window);
 
 	// Asteroid mesh
 	if (show_asteroids) {
@@ -138,6 +128,25 @@ void scene_structure::initialize()
 		for (int k = 0; k < asteroid_set.N_asteroids; k++) 
 			asteroid_set.drawables[k].shader = shader_custom; 
 	}
+
+	float scaling = 0.04f;
+    xwing.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/x-wing2_body.obj"));
+	//xwing.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/test_3.png", GL_REPEAT, GL_REPEAT);
+	xwing.material.color = { 0.6, 0.6, 0.6 };
+	xwing.model.scaling = scaling;
+	mesh_drawable xwing_wing;
+	xwing_wing.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/x-wing2_airfoil.obj"));
+	xwing_wing.material.color = { 0.65, 0.65, 0.55 };
+	xwing_wing.model.scaling = scaling;
+	xwing.shader = shader_custom;
+	xwing_wing.shader = shader_custom;
+
+	xwing_ship = ship();
+	xwing_ship.body = xwing;
+	xwing_ship.wing = xwing_wing;
+	xwing_ship.initialize(inputs, window);
+
+
 
 }
 
@@ -269,7 +278,7 @@ void scene_structure::keyboard_event()
 void scene_structure::idle_frame()
 {
 	//camera_control.idle_frame(environment.camera_view, xwing_ship);
-	camera_control.idle_frame(environment.camera_view);
+	camera_control.idle_frame(environment.camera_view, xwing_ship);
 	
 }
 

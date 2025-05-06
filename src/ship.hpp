@@ -3,20 +3,21 @@
 
 namespace cgp {
 struct ship {
-    mesh_drawable body;
     mesh_drawable arrow_up;
     mesh_drawable arrow_velocity;
     mesh_drawable arrow_left;
 
-    hierarchy_mesh_drawable hierarchy;
+    mesh_drawable body;
     mesh_drawable wing; // used 4 times 
+
+    hierarchy_mesh_drawable hierarchy;
 
     vec3 velocity={1,0,0 };
     vec3 up={0,0,1 };
     vec3 left={0, 1, 0 };
     vec3 angular_velocity = {0, 0, 0};
 
-    bool STOP = true;
+    bool STOP = false;
     float up_speed=1.f;
     float roll_speed=1.2f;
     float turn_speed=.8f;
@@ -26,6 +27,12 @@ struct ship {
     float speed_min=0.01f;
     float angular_speed=2.f;
     float amorti_angulaire=0.96f;
+    bool deployed = false;
+    float wing_min_angle = 0.f;
+    float wing_max_angle = 0.22f;
+    float wing_angle = 0.f;
+    float wing_speed = 0.3f;
+
 
 
     // Pointers to the global state of the inputs (keyboard, mouse, etc)
