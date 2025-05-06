@@ -32,17 +32,28 @@ void camera_combat_mode::idle_frame(mat4& camera_matrix_view, ship& ship_to_cont
 	assert_cgp_no_msg(inputs != nullptr);
 	assert_cgp_no_msg(window != nullptr);
 
-	float const magnitude = inputs->time_interval;
 
+	// Update the camera position and orientation
+	vec3 angular_velocity = ship_to_control.angular_velocity;
+	vec3 pos = ship_to_control.hierarchy["Vaisseau base"].transform_local.translation - ship_to_control.velocity + ship_to_control.up/3;
+
+	float const magnitude = inputs->time_interval;
+	float angle = norm(ship_to_control.angular_velocity) * magnitude;
+	if (angle > 0.0001) {
+		vec3 axis = normalize(ship_to_control.angular_velocity);
+		rotation_transform rT = rotation_transform::from_axis_angle(axis, angle);
+		pos = rT * pos;
+	}
 	
 	look_at(
-        ship_to_control.hierarchy["Vaisseau base"].transform_local.translation - ship_to_control.velocity + ship_to_control.up/3, // Camera position
+        pos, // Camera position
         ship_to_control.hierarchy["Vaisseau base"].transform_local.translation,                           // Target position
         ship_to_control.up                                                // Up vector
     );
 
 	camera_matrix_view = camera_model.matrix_view();
 
+	
 
 	// Preconditions
 	/**
