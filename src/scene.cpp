@@ -75,7 +75,13 @@ void scene_structure::initialize()
 	camel.model.translation = { -1,1,0.5f };
 
 	// x-wing
-    xwing.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/x-wing3.obj"));
+	mesh tmp = mesh_load_file_obj(project::path + "assets/text_texture.obj");
+
+
+
+
+
+    xwing.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/text_texture.obj"));
 	xwing.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/test_3.png", GL_REPEAT, GL_REPEAT);
 	xwing.material.color = { 0.4, 0.7, 0.3 };
 	xwing.model.scaling = 0.02f;
