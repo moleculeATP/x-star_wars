@@ -66,6 +66,8 @@ struct scene_structure : cgp::scene_inputs_generic {
 	ship xwing_ship;
 	asteroids asteroid_set;
 
+	skybox_drawable skybox;
+
 
 
 

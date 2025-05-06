@@ -35,6 +35,13 @@ void scene_structure::initialize()
 	// Create the global (x,y,z) frame
 	global_frame.initialize_data_on_gpu(mesh_primitive_frame());
 
+	// Skybox
+	image_structure image_skybox_template = image_load_file(project::path+"assets/skybox_05.png");
+	// Split the image into a grid of 4 x 3 sub-images
+	std::vector<image_structure> image_grid = image_split_grid(image_skybox_template, 4, 3);
+	skybox.initialize_data_on_gpu();
+	skybox.texture.initialize_cubemap_on_gpu(image_grid[10], image_grid[4], image_grid[9], image_grid[11], image_grid[1], image_grid[7]);
+
 	// Create the shapes seen in the 3D scene
 	// ********************************************** //
 	cube.initialize_data_on_gpu(mesh_primitive_cube(/*center*/{ 0,0,0 }, /*edge length*/ 1.0f));
@@ -141,6 +148,12 @@ void scene_structure::display_frame()
 {
 	// Update time
 	float dt = timer.update();
+
+	// Skybox
+	//  Must be called before drawing the other shapes and without writing in the Depth Buffer
+	glDepthMask(GL_FALSE); // disable depth-buffer writing
+	draw(skybox, environment);
+	glDepthMask(GL_TRUE);  // re-activate depth-buffer write
 
 
 	// Set additional uniform parameters to the shader
