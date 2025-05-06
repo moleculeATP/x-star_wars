@@ -41,15 +41,19 @@ void ship::initialize(input_devices& inputs, window_structure& window)
     arrow_left.initialize_data_on_gpu(arrow_left_mesh);
     arrow_left.material.color = {0, 1, 0};
 
-    // Creating animated part of wings
-    wing.initialize_data_on_gpu(mesh_primitive_quadrangle({0,0,0}, {1,0,0}, {1,1,0}, {0,1,0}));
+    //wing.initialize_data_on_gpu(mesh_primitive_quadrangle({0,0,0}, {.1,0,0}, {.1,.1,0}, {0,.1,0}));
+
+    mesh_drawable cockpit_1;
+    cockpit_1.initialize_data_on_gpu(mesh_primitive_quadrangle({.2f,.1f,0}, {0.2f,-.1f,0}, {-0.2f,-.1f,0}, {-0.2f,.1f,0}));
+
     hierarchy.add(body, "Vaisseau base");
-    hierarchy.add(wing, "Left down wing", "Vaisseau base", {0, -1, 0.5f});
+    //hierarchy.add(wing, "Left down wing", "Vaisseau base", {0, -.1, 0.05f});
 
     if(STOP) {
         speed = 0;
         speed_min = 0;
     }
+
 }
 
 void ship::draw(environment_generic_structure const& environment){
@@ -85,7 +89,7 @@ void ship::idle_frame()
 
     angular_velocity += angular_speed * angular_acc * magnitude;
     float angle = norm(angular_velocity) * magnitude;
-    if (angle > 0) {
+    if (angle > 0.0001) {
         vec3 axis = normalize(angular_velocity);
         rotation_transform rT = rotation_transform::from_axis_angle(axis, angle);
 

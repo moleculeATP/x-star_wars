@@ -76,6 +76,7 @@ void scene_structure::initialize()
 
 	// x-wing
     xwing.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/x-wing3.obj"));
+	xwing.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/test_3.png", GL_REPEAT, GL_REPEAT);
 	xwing.material.color = { 0.4, 0.7, 0.3 };
 	xwing.model.scaling = 0.02f;
 
@@ -104,8 +105,8 @@ void scene_structure::initialize()
 
 	opengl_shader_structure shader_xwing;
 	shader_xwing.load(
-		project::path + "shaders/shading_custom/xwing.vert.glsl",
-		project::path + "shaders/shading_custom/xwing.frag.glsl"
+		project::path + "shaders/shading_custom/shading_custom.vert.glsl",
+		project::path + "shaders/shading_custom/shading_custom.frag.glsl"
 	);
 	xwing.shader = shader_mesh;
 
@@ -221,7 +222,8 @@ void scene_structure::keyboard_event()
 }
 void scene_structure::idle_frame()
 {
-	camera_control.idle_frame(environment.camera_view, xwing_ship);
+	//camera_control.idle_frame(environment.camera_view, xwing_ship);
+	camera_control.idle_frame(environment.camera_view);
 	
 }
 

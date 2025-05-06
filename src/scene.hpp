@@ -45,8 +45,8 @@ struct scene_structure : cgp::scene_inputs_generic {
 	gui_parameters gui;                  // Standard GUI element storage
 
 	// COMBAT MODE
-	camera_combat_mode camera_control;
-	//camera_controller_orbit camera_control; 
+	//camera_combat_mode camera_control;
+	camera_controller_orbit camera_control; 
 	
 	// ****************************** //
 	// Elements and shapes of the scene
