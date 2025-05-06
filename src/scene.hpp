@@ -5,6 +5,7 @@
 #include "ship.hpp"
 #include "environment.hpp"
 #include "camera_combat_mode/camera_combat_mode.hpp"
+#include "asteroid.hpp"
 
 // This definitions allow to use the structures: mesh, mesh_drawable, etc. without mentionning explicitly cgp::
 using cgp::mesh;
@@ -61,6 +62,10 @@ struct scene_structure : cgp::scene_inputs_generic {
 
 	mesh_drawable sphere_light;
 	mesh_drawable xwing;
+
+	mesh asteroid;
+	mesh_drawable asteroid_drawable;
+	perlin_noise_parameters param;
 
 	ship xwing_ship;
 

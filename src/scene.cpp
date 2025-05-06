@@ -89,6 +89,13 @@ void scene_structure::initialize()
 	xwing_ship = ship(xwing);
 	xwing_ship.initialize(inputs, window);
 
+	// Asteroid mesh
+	// int N_asteroid = 100;
+	// asteroid = create_asteroid_mesh(0.5f, N_asteroid);
+	// asteroid_drawable.initialize_data_on_gpu(asteroid);
+	// update_asteroid(asteroid, asteroid_drawable, 0.5f, N_asteroid, param);
+	// asteroid_drawable.model.translation = {4, 1, 1.5};
+
 
 	// Sphere used to display the position of a light
 	sphere_light.initialize_data_on_gpu(mesh_primitive_sphere(0.2f));
@@ -108,6 +115,7 @@ void scene_structure::initialize()
 	cube.shader = shader_mesh;
 	sphere.shader = shader_mesh;
 	ground.shader = shader_mesh;
+	// asteroid_drawable.shader = shader_mesh;
 
 	opengl_shader_structure shader_xwing;
 	shader_xwing.load(
@@ -179,12 +187,14 @@ void scene_structure::display_frame()
 	draw(cube, environment);	
 	draw(sphere, environment);
 	draw(camel, environment);
+	// draw(asteroid_drawable, environment);
 
 	if (gui.display_wireframe) {
 		draw_wireframe(ground, environment);
 		draw_wireframe(sphere, environment);
 		draw_wireframe(cube, environment);
 		draw_wireframe(camel, environment);
+		// draw_wireframe(asteroid_drawable, environment);
 	}
 
 	environment.background_color = gui.brume_color;
