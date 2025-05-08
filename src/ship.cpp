@@ -49,16 +49,16 @@ void ship::initialize(input_devices& inputs, window_structure& window)
     // wings initialization
     // we only need one wing, we will use it 4 times (the one stocked on wing is top right)
     hierarchy.add(body, "Vaisseau base");
-    hierarchy.add(wing, "Top right wing", "Vaisseau base", {0, -0.042f, 0.013f});
+    hierarchy.add(wing, "Top right wing", "Vaisseau base", {0, -0.042f, 0.008f});
 
     wing.model.scaling_xyz = {1, -1, 1};
-    hierarchy.add(wing, "Top left wing", "Vaisseau base", {0, 0.042f, 0.013f});
+    hierarchy.add(wing, "Top left wing", "Vaisseau base", {0, 0.042f, 0.008f});
 
     wing.model.scaling_xyz = {1, -1, -1};
-    hierarchy.add(wing, "Bottom left wing", "Vaisseau base", {0, 0.04f, -0.008f});
+    hierarchy.add(wing, "Bottom left wing", "Vaisseau base", {0, 0.04f, -0.006f});
 
     wing.model.scaling_xyz = {1, 1, -1};
-    hierarchy.add(wing, "Bottom right wing", "Vaisseau base", {0, -0.04f, -0.008f});
+    hierarchy.add(wing, "Bottom right wing", "Vaisseau base", {0, -0.04f, -0.006f});
 
     if(STOP) {
         speed = 0;
