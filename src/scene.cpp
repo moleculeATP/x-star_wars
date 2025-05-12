@@ -99,6 +99,7 @@ void scene_structure::initialize()
 
 	// Sphere used to display the position of a light
 	sphere_light.initialize_data_on_gpu(mesh_primitive_sphere(0.2f));
+	laser_shot.initialize_data_on_gpu(mesh_primitive_ellipsoid());
 
 	// Remove warnings for unset uniforms
 	cgp_warning::max_warning = 0;
@@ -122,11 +123,12 @@ void scene_structure::initialize()
 		project::path + "shaders/shading_custom/shading_custom.vert.glsl",
 		project::path + "shaders/shading_custom/shading_custom.frag.glsl"
 	);
-	xwing.shader = shader_custom;
 
 	if (show_asteroids) {
-		for (int k = 0; k < asteroid_set.N_asteroids; k++) 
-			asteroid_set.drawables[k].shader = shader_custom; 
+		for (int k = 0; k < asteroid_set.N_asteroids; k++){
+			//asteroid_set.drawables[k].texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/rock.png", GL_REPEAT, GL_REPEAT);
+			asteroid_set.drawables[k].shader = shader_mesh; 
+		}
 	}
 
 	float scaling = 0.04f;
@@ -136,7 +138,7 @@ void scene_structure::initialize()
 	xwing.model.scaling = scaling;
 	mesh_drawable xwing_wing;
 	xwing_wing.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/x-wing2_airfoil.obj"));
-	xwing_wing.material.color = { 0.65, 0.65, 0.55 };
+	xwing_wing.material.color = { 0.65, 0.65, 1 };
 	xwing_wing.model.scaling = scaling;
 	xwing.shader = shader_custom;
 	xwing_wing.shader = shader_custom;

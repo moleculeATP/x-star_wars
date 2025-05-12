@@ -34,6 +34,8 @@ uniform mat4 view;       // View matrix (rigid transform) of the camera - to com
 
 uniform vec3 light; // position of the light
 
+uniform vec3 u_values[100];
+
 
 // Coefficients of phong illumination model
 struct phong_structure {

@@ -88,7 +88,7 @@ void main()
     vec3 u_reflect = reflect(-u_light, n);
     vec3 u_view = normalize(camera_position - fragment.position);
 
-    vec3 C_diffuse_ambiant = (ambiant + diffus * (max(0.0f, dot(n, u_light)))) * (fragment.color) * new_light_color;
+    vec3 C_diffuse_ambiant = (ambiant + diffus * (max(0.0f, dot(n, u_light)))) * (material.color) * new_light_color;
     vec3 C_specular = coef_spec * pow(max(0.0f, dot(u_reflect, u_view)), coef_exp) * new_light_color;
     vec3 phong_color = C_diffuse_ambiant + C_specular;
 

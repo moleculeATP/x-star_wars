@@ -41,11 +41,6 @@ void ship::initialize(input_devices& inputs, window_structure& window)
     arrow_left.initialize_data_on_gpu(arrow_left_mesh);
     arrow_left.material.color = {0, 1, 0};
 
-    //wing.initialize_data_on_gpu(mesh_primitive_quadrangle({0,0,0}, {.1,0,0}, {.1,.1,0}, {0,.1,0}));
-
-    mesh_drawable cockpit_1;
-    cockpit_1.initialize_data_on_gpu(mesh_primitive_quadrangle({.2f,.1f,0}, {0.2f,-.1f,0}, {-0.2f,-.1f,0}, {-0.2f,.1f,0}));
-
     // wings initialization
     // we only need one wing, we will use it 4 times (the one stocked on wing is top right)
     hierarchy.add(body, "Vaisseau base");
@@ -98,6 +93,10 @@ void ship::idle_frame()
     if (inputs->keyboard.is_pressed(GLFW_KEY_D)) // yaw right
         angular_acc += -turn_speed * up;
 
+    if (inputs->keyboard.is_pressed(GLFW_KEY_G)) // yaw right
+        STOP = !STOP;
+
+    if(STOP) return;
     angular_velocity += angular_speed * angular_acc * magnitude;
     float angle = norm(angular_velocity) * magnitude;
     if (angle > 0.0001) {

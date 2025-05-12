@@ -62,6 +62,7 @@ struct scene_structure : cgp::scene_inputs_generic {
 
 	mesh_drawable sphere_light;
 	mesh_drawable xwing;
+	mesh_drawable laser_shot;
 
 	ship xwing_ship;
 	asteroids asteroid_set;
