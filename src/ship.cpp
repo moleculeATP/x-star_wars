@@ -3,17 +3,10 @@
 
 
 namespace cgp{
-ship::ship(const mesh_drawable& body_init)
-{
-    // Initialize the ship with a body
-    ship();
-    body = body_init;
-}
+
 
 ship::ship()
 {
-    // Default constructor
-    body = mesh_drawable();
 
     inputs = nullptr;
     window = nullptr;
@@ -43,22 +36,10 @@ void ship::initialize(input_devices& inputs, window_structure& window)
 
     // wings initialization
     // we only need one wing, we will use it 4 times (the one stocked on wing is top right)
-    hierarchy.add(body, "Vaisseau base");
-    hierarchy.add(wing, "Top right wing", "Vaisseau base", {0, -0.042f, 0.008f});
+    mesh_drawable  base;
+    base.initialize_data_on_gpu(mesh_primitive_sphere(0.001, {0, 0, 0}));
+    hierarchy.add(base, "Vaisseau base");
 
-    wing.model.scaling_xyz = {1, -1, 1};
-    hierarchy.add(wing, "Top left wing", "Vaisseau base", {0, 0.042f, 0.008f});
-
-    wing.model.scaling_xyz = {1, -1, -1};
-    hierarchy.add(wing, "Bottom left wing", "Vaisseau base", {0, 0.04f, -0.006f});
-
-    wing.model.scaling_xyz = {1, 1, -1};
-    hierarchy.add(wing, "Bottom right wing", "Vaisseau base", {0, -0.04f, -0.006f});
-
-    if(STOP) {
-        speed = 0;
-        speed_min = 0;
-    }
 
 }
 
@@ -110,7 +91,6 @@ void ship::idle_frame()
         arrow_velocity.model.rotation = rT * arrow_velocity.model.rotation;
         arrow_up.model.rotation = rT * arrow_up.model.rotation;
         arrow_left.model.rotation = rT * arrow_left.model.rotation;
-        body.model.rotation = rT * body.model.rotation;
     }
 
     angular_velocity *= amorti_angulaire; // par ex. 0.98
@@ -187,26 +167,12 @@ void ship::idle_frame()
     vec3 left = normalize(cross(up, velocity));
     vec3 up = normalize(cross(velocity, left));  // Recalculer up pour assurer l'orthogonalité
     **/
-
-    if (inputs -> keyboard.is_pressed(GLFW_KEY_SPACE)){
-        speed = std::min(speed * speed_increase, speed_max);
-        wing_angle = std::max(wing_angle - wing_speed * magnitude, wing_min_angle);
-    }
-    else{
-        speed = std::max(speed / speed_increase, speed_min);
-        wing_angle = std::min(wing_angle + wing_speed * magnitude, wing_max_angle);
-    }
     
     
     
     // body.model.rotation = rotation_transform::from_frame_transform({1,0,0}, {0,0,1}, velocity, up);
     hierarchy["Vaisseau base"].transform_local.translation = hierarchy["Vaisseau base"].transform_local.translation + velocity * speed;
     hierarchy["Vaisseau base"].transform_local.rotation = rotation_transform::from_frame_transform({1,0,0}, {0,0,1}, velocity, up);
-
-    hierarchy["Top right wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, -wing_angle);
-    hierarchy["Top left wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, wing_angle);
-    hierarchy["Bottom left wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, -wing_angle);
-    hierarchy["Bottom right wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, wing_angle);
 
     arrow_up.model.translation = hierarchy["Vaisseau base"].transform_local.translation;
     arrow_left.model.translation = hierarchy["Vaisseau base"].transform_local.translation;

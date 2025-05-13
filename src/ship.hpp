@@ -7,9 +7,6 @@ struct ship {
     mesh_drawable arrow_velocity;
     mesh_drawable arrow_left;
 
-    mesh_drawable body;
-    mesh_drawable wing; // used 4 times 
-
     hierarchy_mesh_drawable hierarchy;
 
     vec3 velocity={1,0,0 };
@@ -27,11 +24,6 @@ struct ship {
     float speed_min=0.01f;
     float angular_speed=2.f;
     float amorti_angulaire=0.96f;
-    bool deployed = false;
-    float wing_min_angle = 0.f;
-    float wing_max_angle = 0.22f;
-    float wing_angle = 0.f;
-    float wing_speed = 0.3f;
 
 
 
@@ -40,9 +32,6 @@ struct ship {
     // Pointer to the global state of the window
     window_structure* window;
 
-
-    // Constructeur
-    ship(const mesh_drawable& body_init);
     ship();
 
     void initialize(input_devices& inputs, window_structure& window);

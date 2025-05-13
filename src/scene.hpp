@@ -3,6 +3,7 @@
 
 #include "cgp/cgp.hpp"
 #include "ship.hpp"
+#include "x_wing.hpp"
 #include "environment.hpp"
 #include "camera_combat_mode/camera_combat_mode.hpp"
 #include "asteroid.hpp"
@@ -62,9 +63,10 @@ struct scene_structure : cgp::scene_inputs_generic {
 
 	mesh_drawable sphere_light;
 	mesh_drawable xwing;
+	std::vector<mesh_drawable> shapes;
 	mesh_drawable laser_shot;
 
-	ship xwing_ship;
+	x_wing xwing_ship;
 	asteroids asteroid_set;
 
 	skybox_drawable skybox;

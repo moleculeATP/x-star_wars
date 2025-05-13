@@ -143,10 +143,13 @@ void scene_structure::initialize()
 	xwing.shader = shader_custom;
 	xwing_wing.shader = shader_custom;
 
-	xwing_ship = ship();
+	xwing_ship = x_wing();
 	xwing_ship.body = xwing;
 	xwing_ship.wing = xwing_wing;
 	xwing_ship.initialize(inputs, window);
+
+	auto struct_shape = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__.obj");
+	shapes = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_shape);
 
 
 
@@ -209,6 +212,8 @@ void scene_structure::display_frame()
 
 	if (show_asteroids) asteroid_set.idle_frame(dt);
 
+	for (int k = 0; k < shapes.size(); ++k)
+		draw(shapes[k], environment);
 	
 	// conditional display of the global frame (set via the GUI)
 	if (gui.display_frame)
