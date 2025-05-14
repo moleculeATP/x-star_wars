@@ -131,27 +131,12 @@ void scene_structure::initialize()
 		}
 	}
 
-	float scaling = 0.04f;
-    xwing.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/x-wing2_body.obj"));
-	//xwing.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/test_3.png", GL_REPEAT, GL_REPEAT);
-	xwing.material.color = { 0.6, 0.6, 0.6 };
-	xwing.model.scaling = scaling;
-	mesh_drawable xwing_wing;
-	xwing_wing.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/x-wing2_airfoil.obj"));
-	xwing_wing.material.color = { 0.65, 0.65, 1 };
-	xwing_wing.model.scaling = scaling;
-	xwing.shader = shader_custom;
-	xwing_wing.shader = shader_custom;
-
 	xwing_ship = x_wing();
-	xwing_ship.body = xwing;
-	xwing_ship.wing = xwing_wing;
+	auto struct_body = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__body.obj");
+	auto struct_wing = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__wing.obj");
+	xwing_ship.body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body);
+	xwing_ship.wing = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_wing);
 	xwing_ship.initialize(inputs, window);
-
-	auto struct_shape = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__.obj");
-	shapes = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_shape);
-
-
 
 }
 
@@ -211,9 +196,6 @@ void scene_structure::display_frame()
 	idle_frame();
 
 	if (show_asteroids) asteroid_set.idle_frame(dt);
-
-	for (int k = 0; k < shapes.size(); ++k)
-		draw(shapes[k], environment);
 	
 	// conditional display of the global frame (set via the GUI)
 	if (gui.display_frame)

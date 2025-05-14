@@ -4,8 +4,8 @@
 namespace cgp {
 
 struct x_wing : ship {
-    mesh_drawable body;
-    mesh_drawable wing; 
+    std::vector<mesh_drawable> body;
+    std::vector<mesh_drawable> wing; 
 
     bool deployed = false;
     float wing_min_angle = 0.f;

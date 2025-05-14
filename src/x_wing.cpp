@@ -6,19 +6,32 @@ namespace cgp {
 
     void x_wing::initialize(input_devices& inputs, window_structure& window){
         ship::initialize(inputs, window);
+        float scaling = 0.04f;
 
-        // obsolete
-        hierarchy.add(body, "Body", "Vaisseau base");
-        hierarchy.add(wing, "Top right wing", "Vaisseau base", {0, -0.042f, 0.008f});
+        for (int k = 0; k < body.size(); ++k){
+            body[k].model.scaling = scaling;
+            hierarchy.add(body[k], "Body " + str(k), "Vaisseau base");
+        }
 
-        wing.model.scaling_xyz = {1, -1, 1};
-        hierarchy.add(wing, "Top left wing", "Vaisseau base", {0, 0.042f, 0.008f});
+        hierarchy.add(mesh_drawable(), "Top right wing", "Vaisseau base");
+        hierarchy.add(mesh_drawable(), "Top left wing", "Vaisseau base");
+        hierarchy.add(mesh_drawable(), "Bottom left wing", "Vaisseau base");
+        hierarchy.add(mesh_drawable(), "Bottom right wing", "Vaisseau base");
 
-        wing.model.scaling_xyz = {1, -1, -1};
-        hierarchy.add(wing, "Bottom left wing", "Vaisseau base", {0, 0.04f, -0.006f});
+        for (int k = 0; k < wing.size(); ++k){
+            mesh_drawable wing_ = wing[k];
+            wing_.model.scaling = scaling;
+            hierarchy.add(wing_, "Top right wing " + str(k), "Top right wing", {0, -0.042f, 0.008f});
 
-        wing.model.scaling_xyz = {1, 1, -1};
-        hierarchy.add(wing, "Bottom right wing", "Vaisseau base", {0, -0.04f, -0.006f});
+            wing_.model.scaling_xyz = {1, -1, 1};
+            hierarchy.add(wing_, "Top left wing " + str(k), "Top left wing", {0, 0.042f, 0.008f});
+
+            wing_.model.scaling_xyz = {1, -1, -1};
+            hierarchy.add(wing_, "Bottom left wing " + str(k), "Bottom left wing", {0, 0.04f, -0.006f});
+
+            wing_.model.scaling_xyz = {1, 1, -1};
+            hierarchy.add(wing_, "Bottom right wing " + str(k), "Bottom right wing", {0, -0.04f, -0.006f});
+        }
     }
     
 
