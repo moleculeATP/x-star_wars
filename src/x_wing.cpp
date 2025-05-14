@@ -32,6 +32,11 @@ namespace cgp {
             wing_.model.scaling_xyz = {1, 1, -1};
             hierarchy.add(wing_, "Bottom right wing " + str(k), "Bottom right wing", {0, -0.04f, -0.006f});
         }
+
+        debris = std::vector<mesh_drawable> (10);
+        for(int i = 0; i < 10; i++){
+            debris[i].initialize_data_on_gpu(mesh_primitive_sphere(0.02, {0, 0, 0}));
+        }
     }
     
 
@@ -39,19 +44,21 @@ namespace cgp {
         ship::idle_frame();
         float const magnitude = inputs->time_interval;
 
-        if (inputs -> keyboard.is_pressed(GLFW_KEY_SPACE)){
-            speed = std::min(speed * speed_increase, speed_max);
-            wing_angle = std::max(wing_angle - wing_speed * magnitude, wing_min_angle);
-        }
-        else{
-            speed = std::max(speed / speed_increase, speed_min);
-            wing_angle = std::min(wing_angle + wing_speed * magnitude, wing_max_angle);
-        }
+        if(!destruction){
+            if (inputs -> keyboard.is_pressed(GLFW_KEY_SPACE)){
+                speed = std::min(speed * speed_increase, speed_max);
+                wing_angle = std::max(wing_angle - wing_speed * magnitude, wing_min_angle);
+            }
+            else{
+                speed = std::max(speed / speed_increase, speed_min);
+                wing_angle = std::min(wing_angle + wing_speed * magnitude, wing_max_angle);
+            }
 
-        hierarchy["Top right wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, -wing_angle);
-        hierarchy["Top left wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, wing_angle);
-        hierarchy["Bottom left wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, -wing_angle);
-        hierarchy["Bottom right wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, wing_angle);
+            hierarchy["Top right wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, -wing_angle);
+            hierarchy["Top left wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, wing_angle);
+            hierarchy["Bottom left wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, -wing_angle);
+            hierarchy["Bottom right wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, wing_angle);
+        }
     }
 
 }
