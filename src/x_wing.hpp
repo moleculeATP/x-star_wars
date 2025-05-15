@@ -13,6 +13,7 @@ struct x_wing : ship {
     float wing_angle = 0.f;
     float wing_speed = 0.3f;
 
+    void respawn();
     void initialize(input_devices& inputs, window_structure& window);
     void idle_frame();
 };

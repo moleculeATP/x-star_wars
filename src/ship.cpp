@@ -36,11 +36,13 @@ void ship::initialize(input_devices& inputs, window_structure& window)
 
     // wings initialization
     // we only need one wing, we will use it 4 times (the one stocked on wing is top right)
+    hierarchy = hierarchy_mesh_drawable();
     mesh_drawable  base;
     base.initialize_data_on_gpu(mesh_primitive_sphere(0.001, {0, 0, 0}));
     hierarchy.add(base, "Vaisseau base");
 
-
+    STOP = false;
+    destruction = false;
 }
 
 void ship::draw(environment_generic_structure const& environment){
@@ -149,7 +151,7 @@ void ship::idle_frame()
         }
 
 
-        
+
     }
     
 }
