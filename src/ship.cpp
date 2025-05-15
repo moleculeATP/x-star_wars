@@ -58,13 +58,17 @@ void ship::destruction_trigger(vec3 impact_pos, vec3 normal_destruction){
     destruction = true;
     STOP = true;
     impact_pos = impact_pos;
+    normal_destruction = normalize(normal_destruction);
     this->normal_destruction = normal_destruction;
+    directions_destruction = std::vector<vec3> (debris.size());
+    angular_velocity_destruction = std::vector<vec3> (debris.size());
 
     for(int k = 0; k < debris.size(); ++k){
         debris[k].model.translation = hierarchy["Vaisseau base"].transform_local.translation;
         debris[k].model.rotation = arrow_velocity.model.rotation;
 
-        // faire un vector de vec3 pour tirer des directions aleatoires
+        directions_destruction[k] = {rand_normal(normal_destruction.x, 1), rand_normal(normal_destruction.y, 1), rand_normal(normal_destruction.z, 1)};
+        angular_velocity_destruction[k] = {rand_uniform(-5, 5), rand_uniform(-5, 5), rand_uniform(-5, 5)};
     }
 }
 
@@ -136,9 +140,16 @@ void ship::idle_frame()
             
             vec3 incd = debris[k].model.translation - impact_pos;
             vec3 dir = normalize(normal_destruction);
-            debris[k].model.translation += -derive_speed * dir;
-            debris[k].model.rotation = arrow_velocity.model.rotation;
+            debris[k].model.translation += derive_speed * directions_destruction[k];
+
+            float angle = norm(angular_velocity_destruction[k]) * inputs->time_interval;
+		    vec3 axis = normalize(angular_velocity_destruction[k]);
+            rotation_transform rT = rotation_transform::from_axis_angle(axis, angle);
+		    debris[k].model.rotation *= rT;
         }
+
+
+        
     }
     
 }

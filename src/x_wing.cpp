@@ -33,10 +33,14 @@ namespace cgp {
             hierarchy.add(wing_, "Bottom right wing " + str(k), "Bottom right wing", {0, -0.04f, -0.006f});
         }
 
+        debris = body;
+
+        /**
         debris = std::vector<mesh_drawable> (10);
         for(int i = 0; i < 10; i++){
             debris[i].initialize_data_on_gpu(mesh_primitive_sphere(0.02, {0, 0, 0}));
         }
+        */
     }
     
 

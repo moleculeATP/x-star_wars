@@ -17,6 +17,8 @@ struct ship {
 
     vec3 impact_pos = {0, 0, 0};
     vec3 normal_destruction = {-1, 0, 0};
+    std::vector<vec3> directions_destruction;
+    std::vector<vec3> angular_velocity_destruction;
 
     bool STOP = false;
 
@@ -33,7 +35,7 @@ struct ship {
     float amorti_angulaire=0.96f;
 
     bool destruction=false;
-    float derive_speed = 0.001f;
+    float derive_speed = 0.005f;
 
 
 
