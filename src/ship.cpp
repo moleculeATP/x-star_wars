@@ -43,6 +43,8 @@ void ship::initialize(input_devices& inputs, window_structure& window)
 
     STOP = false;
     destruction = false;
+
+    
 }
 
 void ship::draw(environment_generic_structure const& environment){

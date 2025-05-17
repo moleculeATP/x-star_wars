@@ -4,6 +4,7 @@
 #include "cgp/cgp.hpp"
 #include "ship.hpp"
 #include "x_wing.hpp"
+#include "ai_ship.hpp"
 #include "environment.hpp"
 #include "camera_combat_mode/camera_combat_mode.hpp"
 #include "asteroid.hpp"
@@ -47,8 +48,9 @@ struct scene_structure : cgp::scene_inputs_generic {
 	gui_parameters gui;                  // Standard GUI element storage
 
 	// COMBAT MODE
+	bool camera_fixe = false; // bugged
 	camera_combat_mode camera_control;
-	//camera_controller_orbit camera_control; 
+	camera_controller_orbit camera_control_fixe; 
 	
 	// ****************************** //
 	// Elements and shapes of the scene
@@ -67,6 +69,7 @@ struct scene_structure : cgp::scene_inputs_generic {
 	mesh_drawable laser_shot;
 
 	x_wing xwing_ship;
+	ai_ship aiship;
 	asteroids asteroid_set;
 
 	skybox_drawable skybox;

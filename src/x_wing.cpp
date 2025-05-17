@@ -1,6 +1,6 @@
 #include "x_wing.hpp"
 #include "ship.hpp"
-#include <iostream> // Pour debug avec std::cout si besoin
+#include <iostream> 
 
 namespace cgp {
 

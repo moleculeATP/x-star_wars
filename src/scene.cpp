@@ -12,11 +12,16 @@ void scene_structure::initialize()
 	
 	// Set the behavior of the camera and its initial position
 	// ********************************************** //
-	camera_control.initialize(inputs, window); // Donne accès aux inputs et à la fenêtre au contrôleur de caméra
+	if(camera_fixe){
+		camera_control_fixe.initialize(inputs, window);
+	}
+	else{
+		camera_control.initialize(inputs, window);
+	}
 	
 	//camera_control.set_rotation_axis_z(); // camera rotates around z-axis
 	//   look_at(camera_position, targeted_point, up_direction)
-	camera_control.look_at(
+	camera_control_fixe.look_at(
 		{-2.0f, 0.0f, 1.0f},
 		{0.0f, 0.0f, 0.0f},
 		{0.0f, 0.0f, 1.0f} // up direction
@@ -138,6 +143,12 @@ void scene_structure::initialize()
 	xwing_ship.wing = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_wing);
 	xwing_ship.initialize(inputs, window);
 
+	aiship.initialize(inputs, window);
+	aiship.target = &xwing_ship;
+	mesh_drawable cone;
+	cone.initialize_data_on_gpu(mesh_primitive_cone(0.1, 0.5, {0, 0, 0}, {1, 0, 0}));
+	aiship.hierarchy.add(cone, "ship", "Vaisseau base", {0, 0, 0});
+
 }
 
 
@@ -193,9 +204,13 @@ void scene_structure::display_frame()
 
 	xwing_ship.idle_frame();
 	xwing_ship.draw(environment); //equivalent to draw(xwing, environment);
-	idle_frame();
+
+	//aiship.idle_frame();
+	//aiship.draw(environment);
 
 	if (show_asteroids) asteroid_set.idle_frame(dt);
+
+	idle_frame();
 	
 	// conditional display of the global frame (set via the GUI)
 	if (gui.display_frame)
@@ -262,13 +277,14 @@ void scene_structure::mouse_click_event()
 }
 void scene_structure::keyboard_event()
 {
-	camera_control.action_keyboard(environment.camera_view);
+	camera_control.action_keyboard(environment.camera_view);	
 }
 void scene_structure::idle_frame()
 {
-	//camera_control.idle_frame(environment.camera_view, xwing_ship);
-	camera_control.idle_frame(environment.camera_view, xwing_ship);
-	
+	if(camera_fixe)
+		camera_control_fixe.idle_frame(environment.camera_view);
+	else
+		camera_control.idle_frame(environment.camera_view, xwing_ship);	
 }
 
 void scene_structure::display_info()
