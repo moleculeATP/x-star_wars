@@ -14,10 +14,11 @@ ship::ship()
 
 }
 
-void ship::initialize(input_devices& inputs, window_structure& window)
+void ship::initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader)
 {
     this->inputs = &inputs;
     this->window = &window;
+    this->shader = &shader;
 
     // Create the arrow pointing in the up direction
     mesh arrow_up_mesh = mesh_primitive_cylinder(0.005f, {0, 0, 0}, up/3);
@@ -40,11 +41,19 @@ void ship::initialize(input_devices& inputs, window_structure& window)
     mesh_drawable  base;
     base.initialize_data_on_gpu(mesh_primitive_sphere(0.001, {0, 0, 0}));
     hierarchy.add(base, "Vaisseau base");
+    hierarchy["Vaisseau base"].drawable.shader = shader;
 
     STOP = false;
     destruction = false;
 
-    
+    // Lasers
+    mesh laser_mesh = mesh_primitive_cylinder(0.08f, {0,0,0}, {0,0,0.2f}, 10, 10, true);
+    laser.initialize_data_on_gpu(laser_mesh);
+    lasers_pos.resize(N_lasers);
+    lasers_velocity.resize(N_lasers);
+    lasers_orientation.resize(N_lasers);
+    const std::vector<int> tmp = std::vector<int>(N_lasers, 0);
+    lasers_active = numarray<int>(tmp);
 }
 
 void ship::draw(environment_generic_structure const& environment){
@@ -55,6 +64,13 @@ void ship::draw(environment_generic_structure const& environment){
     }else{
         hierarchy.update_local_to_global_coordinates();
         cgp::draw(hierarchy, environment);
+    }
+    for (int i = 0; i < lasers_pos.size(); i++) {
+        if (lasers_active[i] == 1) {
+            laser.model.rotation = lasers_orientation[i];
+            laser.model.translation = lasers_pos[i];
+            cgp::draw(laser, environment);
+        }
     }
 }
 
@@ -76,7 +92,7 @@ void ship::destruction_trigger(vec3 impact_pos, vec3 normal_destruction){
     }
 }
 
-void ship::idle_frame()
+void ship::idle_frame(float dt)
 {
     // Update the ship's position and rotation based on its speed and velocity
     // Preconditions
@@ -137,6 +153,28 @@ void ship::idle_frame()
         arrow_left.model.translation = hierarchy["Vaisseau base"].transform_local.translation;
         arrow_velocity.model.translation = hierarchy["Vaisseau base"].transform_local.translation;
 
+        // Lasers
+        if (inputs->keyboard.is_pressed(GLFW_KEY_P) && laser_dt >= laser_delay) {
+            laser_dt = 0;
+            if (last_laser == N_lasers - 1) 
+                last_laser = 0;
+            else last_laser += 1;
+            lasers_pos[last_laser] = hierarchy["Vaisseau base"].transform_local.translation + 2.0f * normalize(velocity);
+            lasers_velocity[last_laser] = lasers_speed * (lasers_pos[last_laser] - hierarchy["Vaisseau base"].transform_local.translation);
+            lasers_orientation[last_laser] = hierarchy["Vaisseau base"].transform_local.rotation * rotation_transform::from_axis_angle({0,1,0}, Pi/2.0f);
+            lasers_active[last_laser] = 1;
+        }else {
+            laser_dt += dt;
+        }
+
+        for (int i = 0; i < N_lasers; i++) {
+            if (lasers_active[i] == 0) continue;
+            vec3 velocity = lasers_velocity[i];
+            lasers_pos[i] += velocity * dt;
+            if (abs(lasers_pos[i][0]) > laser_bound || abs(lasers_pos[i][1]) > laser_bound || abs(lasers_pos[i][2]) > laser_bound)
+                lasers_active[i] = 0;
+        }
+
 
     }else{
         // destruction mod
@@ -151,10 +189,6 @@ void ship::idle_frame()
             rotation_transform rT = rotation_transform::from_axis_angle(axis, angle);
 		    debris[k].model.rotation *= rT;
         }
-
-
-
     }
-    
 }
 }

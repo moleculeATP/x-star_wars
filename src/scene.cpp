@@ -120,8 +120,6 @@ void scene_structure::initialize()
 	camel.shader = shader_mesh;
 	cube.shader = shader_mesh;
 	sphere.shader = shader_mesh;
-	ground.shader = shader_mesh;
-	//asteroid_drawable.shader = shader_mesh;
 
 	opengl_shader_structure shader_custom;
 	shader_custom.load(
@@ -129,10 +127,12 @@ void scene_structure::initialize()
 		project::path + "shaders/shading_custom/shading_custom.frag.glsl"
 	);
 
+	ground.shader = shader_custom;
+
 	if (show_asteroids) {
 		for (int k = 0; k < asteroid_set.N_asteroids; k++){
 			//asteroid_set.drawables[k].texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/rock.png", GL_REPEAT, GL_REPEAT);
-			asteroid_set.drawables[k].shader = shader_mesh; 
+			asteroid_set.drawables[k].shader = shader_custom; 
 		}
 	}
 
@@ -141,16 +141,18 @@ void scene_structure::initialize()
 	auto struct_wing = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__wing.obj");
 	xwing_ship.body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body);
 	xwing_ship.wing = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_wing);
-	xwing_ship.initialize(inputs, window);
+	// xwing_ship.set_shader(shader_custom);
+	xwing_ship.initialize(inputs, window, shader_custom);
+	
 
-	aiship.initialize(inputs, window);
+	aiship.initialize(inputs, window, shader_custom);
 	aiship.target = &xwing_ship;
 	mesh_drawable cone;
 	cone.initialize_data_on_gpu(mesh_primitive_cone(0.1, 0.5, {0, 0, 0}, {1, 0, 0}));
 	aiship.hierarchy.add(cone, "ship", "Vaisseau base", {0, 0, 0});
+	// xwing_ship.laser.shader = shader_custom;
 
 }
-
 
 // This function is called permanently at every new frame
 // Note that you should avoid having costly computation and large allocation defined there. This function is mostly used to call the draw() functions on pre-existing data.
@@ -171,10 +173,15 @@ void scene_structure::display_frame()
 	environment.uniform_generic.uniform_float["diffus"] = gui.diffus;
 	environment.uniform_generic.uniform_float["coef_spec"] = gui.coef_spec;
 	environment.uniform_generic.uniform_float["coef_exp"] = gui.exp_spec;
-
 	environment.uniform_generic.uniform_vec3["light_color"] = gui.light_color;
 	environment.uniform_generic.uniform_vec3["brume_color"] = gui.brume_color;
 	environment.uniform_generic.uniform_vec3["light_position"] = gui.light_position;
+
+	environment.uniform_generic.uniform_int["N_lights"] = 20;
+	environment.uniform_generic.uniform_vec3["light_colors[0]"] = gui.light_color;
+	environment.uniform_generic.uniform_vec3["light_positions[0]"] = gui.light_position;
+	environment.uniform_generic.uniform_float["d_light_max[0]"] = -1.0f;
+	environment.uniform_generic.uniform_int["active_lights[0]"] = 1;
 
 	sphere_light.model.translation = gui.light_position;
 	sphere_light.material.color = gui.light_color * 0.8f;
@@ -201,6 +208,22 @@ void scene_structure::display_frame()
 	xwing.model.translation = xwing_position;
 	xwing.model.rotation = rotation_transform::from_matrix(R);
 	**/
+
+	// Lasers
+	for (int i = 1; i < xwing_ship.N_lasers; i ++) {
+		std::string uniform_color = "light_colors[" + std::to_string(i) + "]";
+		std::string uniform_pos = "light_positions[" + std::to_string(i) + "]";
+		std::string uniform_dl_max = "d_light_max[" + std::to_string(i) + "]";
+		std::string uniform_active_light = "active_lights[" + std::to_string(i) + "]";
+		if (xwing_ship.lasers_active[i] == 0) {
+			environment.uniform_generic.uniform_int[uniform_active_light] = 0;
+		} else {
+			environment.uniform_generic.uniform_vec3[uniform_color] = xwing_ship.lasers_color;
+			environment.uniform_generic.uniform_vec3[uniform_pos] = xwing_ship.lasers_pos[i];
+			environment.uniform_generic.uniform_float[uniform_dl_max] = xwing_ship.d_light_max;
+			environment.uniform_generic.uniform_int[uniform_active_light] = 1;
+		}
+	}
 
 	xwing_ship.idle_frame();
 	xwing_ship.draw(environment); //equivalent to draw(xwing, environment);

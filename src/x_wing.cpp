@@ -4,15 +4,17 @@
 
 namespace cgp {
 
-    void x_wing::initialize(input_devices& inputs, window_structure& window){
-        ship::initialize(inputs, window);
+    void x_wing::initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader){
+        ship::initialize(inputs, window, shader);
         float scaling = 0.04f;
         debris.resize(body.size() + 2 * wing.size());
 
         for (int k = 0; k < body.size(); ++k){
             body[k].model.scaling = scaling;
-            hierarchy.add(body[k], "Body " + str(k), "Vaisseau base");
+            std::string name = "Body " + str(k);
+            hierarchy.add(body[k], name, "Vaisseau base");
             debris[k] = body[k];
+            hierarchy[name].drawable.shader = shader;
         }
 
         hierarchy.add(mesh_drawable(), "Top right wing", "Vaisseau base");
@@ -26,16 +28,20 @@ namespace cgp {
 
             debris[body.size() + k] = wing_;
             hierarchy.add(wing_, "Top right wing " + str(k), "Top right wing", {0, -0.042f, 0.008f});
+            hierarchy["Top right wing " + str(k)].drawable.shader = shader;
 
             wing_.model.scaling_xyz = {1, -1, 1};
             hierarchy.add(wing_, "Top left wing " + str(k), "Top left wing", {0, 0.042f, 0.008f});
+            hierarchy["Top left wing " + str(k)].drawable.shader = shader;
 
             wing_.model.scaling_xyz = {1, -1, -1};
             debris[body.size() + wing.size() + k] = wing_;
             hierarchy.add(wing_, "Bottom left wing " + str(k), "Bottom left wing", {0, 0.04f, -0.006f});
+            hierarchy["Bottom left wing " + str(k)].drawable.shader = shader;
 
             wing_.model.scaling_xyz = {1, 1, -1};
             hierarchy.add(wing_, "Bottom right wing " + str(k), "Bottom right wing", {0, -0.04f, -0.006f});
+            hierarchy["Bottom right wing " + str(k)].drawable.shader = shader;
         }
         
 
@@ -48,14 +54,13 @@ namespace cgp {
     }
 
     void x_wing::respawn() {
-        x_wing::initialize(*inputs, *window);
+        x_wing::initialize(*inputs, *window, *shader);
     }
     
 
     void x_wing::idle_frame() {
-        ship::idle_frame();
         float const magnitude = inputs->time_interval;
-
+        ship::idle_frame(magnitude);
         if(!destruction){
             if (inputs -> keyboard.is_pressed(GLFW_KEY_SPACE)){
                 speed = std::min(speed * speed_increase, speed_max);
@@ -76,6 +81,11 @@ namespace cgp {
             }
         }
     }
+
+    // void x_wing::set_shader(opengl_shader_structure &shader) {
+    //     for (mesh_drawable md: body) md.shader = shader;
+    //     for (mesh_drawable md: wing) md.shader = shader;
+    // }
 
 }
 

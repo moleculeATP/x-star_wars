@@ -14,8 +14,9 @@ struct x_wing : ship {
     float wing_speed = 0.3f;
 
     void respawn();
-    void initialize(input_devices& inputs, window_structure& window);
+    void initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader);
     void idle_frame();
+    // void set_shader(opengl_shader_structure &shader);
 };
 
 }

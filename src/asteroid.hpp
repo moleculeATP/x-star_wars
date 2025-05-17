@@ -3,9 +3,9 @@
 
 struct perlin_noise_parameters
 {
-	float persistency = 0.35f;
+	float persistency = 0.1f;
 	float frequency_gain = 2.0f;
-	int octave = 6;
+	int octave = 20;
 	float asteroid_height = 0.5f;
 };
 

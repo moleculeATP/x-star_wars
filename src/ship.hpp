@@ -37,6 +37,21 @@ struct ship {
     bool destruction=false;
     float derive_speed = 0.005f;
 
+    // Lasers
+    mesh_drawable laser;
+    int N_lasers = 19;
+    int last_laser = 0;
+    vec3 lasers_color = {1.0f, 0.1f, 0.88f};
+    float laser_bound = 100.0f;
+    float lasers_speed = 10.0f;
+    float laser_delay = 0.1f;
+    float laser_dt = 0.0f;
+    float d_light_max = 10.0f;
+    numarray<vec3> lasers_velocity;
+    numarray<vec3> lasers_pos;
+    numarray<rotation_transform> lasers_orientation;
+    numarray<int> lasers_active;
+
 
 
     // Pointers to the global state of the inputs (keyboard, mouse, etc)
@@ -44,13 +59,15 @@ struct ship {
     // Pointer to the global state of the window
     window_structure* window;
 
+    opengl_shader_structure* shader;
+
     ship();
 
-    void initialize(input_devices& inputs, window_structure& window);
+    void initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader);
 
     void draw(environment_generic_structure const& environment);
 
-    void idle_frame();
+    void idle_frame(float dt);
 
     void destruction_trigger(vec3 impact_pos, vec3 normal_destruction);
 
