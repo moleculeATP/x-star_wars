@@ -40,6 +40,18 @@ void scene_structure::initialize()
 	// Create the global (x,y,z) frame
 	global_frame.initialize_data_on_gpu(mesh_primitive_frame());
 
+	// Load shaders
+	opengl_shader_structure shader_mesh;
+	shader_mesh.load(
+		project::path + "shaders/mesh/mesh.vert.glsl",
+		project::path + "shaders/mesh/mesh.frag.glsl");
+
+	opengl_shader_structure shader_custom;
+	shader_custom.load(
+		project::path + "shaders/shading_custom/shading_custom.vert.glsl",
+		project::path + "shaders/shading_custom/shading_custom.frag.glsl"
+	);
+
 	// Skybox
 	image_structure image_skybox_template = image_load_file(project::path+"assets/skybox_05.png");
 	// Split the image into a grid of 4 x 3 sub-images
@@ -90,16 +102,15 @@ void scene_structure::initialize()
 
 	// Asteroid mesh
 	if (show_asteroids) {
-		int N_mesh = 100;
-		asteroid_set.N_asteroids = 26;
-		std::vector<vec3> scales = std::vector<vec3>(asteroid_set.N_asteroids, {rand_uniform(0.5, 1.5), rand_uniform(0.5, 1.5), rand_uniform(0.5, 1.5)});
-		asteroid_set.create_meshes(scales, N_mesh);
-		asteroid_set.initialize();
-		asteroid_set.update_asteroids();
-		for (int k = 0; k < asteroid_set.N_asteroids; k++) {
-			asteroid_set.drawables[k].vbo_color.update(asteroid_set.meshes[k].color);
-			asteroid_set.drawables[k].model.translation = asteroid_set.positions[k];
-		}
+		int N_uv = 100;
+		asteroid_set.N_mesh = 10;
+		asteroid_set.N_asteroids = 100;
+		std::vector<vec3> scales = std::vector<vec3>(asteroid_set.N_mesh, {rand_uniform(0.5, 6.0), rand_uniform(0.5, 1.5), rand_uniform(0.5, 1.5)});
+		asteroid_set.initialize(scales, N_uv, project::path + "assets/asteroid1.jpg", shader_custom);
+		asteroid_set.apply_perlin();
+		// for (int k = 0; k < asteroid_set.N_mesh; k++) {
+		// 	asteroid_set.drawables[k].vbo_color.update(asteroid_set.meshes[k].color);
+		// }
 	}
 
 	// Sphere used to display the position of a light
@@ -109,48 +120,24 @@ void scene_structure::initialize()
 	// Remove warnings for unset uniforms
 	cgp_warning::max_warning = 0;
 
-
-	// Load the custom shader
-	opengl_shader_structure shader_mesh;
-	shader_mesh.load(
-		project::path + "shaders/mesh/mesh.vert.glsl",
-		project::path + "shaders/mesh/mesh.frag.glsl");
-
 	// Affect the loaded shader to the mesh_drawable
 	camel.shader = shader_mesh;
 	cube.shader = shader_mesh;
 	sphere.shader = shader_mesh;
-
-	opengl_shader_structure shader_custom;
-	shader_custom.load(
-		project::path + "shaders/shading_custom/shading_custom.vert.glsl",
-		project::path + "shaders/shading_custom/shading_custom.frag.glsl"
-	);
-
 	ground.shader = shader_custom;
-
-	if (show_asteroids) {
-		for (int k = 0; k < asteroid_set.N_asteroids; k++){
-			//asteroid_set.drawables[k].texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/rock.png", GL_REPEAT, GL_REPEAT);
-			asteroid_set.drawables[k].shader = shader_custom; 
-		}
-	}
 
 	xwing_ship = x_wing();
 	auto struct_body = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__body.obj");
 	auto struct_wing = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__wing.obj");
 	xwing_ship.body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body);
 	xwing_ship.wing = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_wing);
-	// xwing_ship.set_shader(shader_custom);
 	xwing_ship.initialize(inputs, window, shader_custom);
-	
 
 	aiship.initialize(inputs, window, shader_custom);
 	aiship.target = &xwing_ship;
 	mesh_drawable cone;
 	cone.initialize_data_on_gpu(mesh_primitive_cone(0.1, 0.5, {0, 0, 0}, {1, 0, 0}));
 	aiship.hierarchy.add(cone, "ship", "Vaisseau base", {0, 0, 0});
-	// xwing_ship.laser.shader = shader_custom;
 
 }
 
@@ -231,7 +218,7 @@ void scene_structure::display_frame()
 	//aiship.idle_frame();
 	//aiship.draw(environment);
 
-	if (show_asteroids) asteroid_set.idle_frame(dt);
+	if (show_asteroids) asteroid_set.idle_frame(dt, xwing_ship.hierarchy["Vaisseau base"].drawable.model.translation);
 
 	idle_frame();
 	
@@ -246,21 +233,15 @@ void scene_structure::display_frame()
 	draw(cube, environment);	
 	draw(sphere, environment);
 	draw(camel, environment);
-	if (show_asteroids) {
-		for (int k = 0; k < asteroid_set.N_asteroids; k++) 
-			draw(asteroid_set.drawables[k], environment);
-	}
+
+	if (show_asteroids)
+		asteroid_set.draw(environment, gui.display_wireframe);
 
 	if (gui.display_wireframe) {
 		draw_wireframe(ground, environment);
 		draw_wireframe(sphere, environment);
 		draw_wireframe(cube, environment);
 		draw_wireframe(camel, environment);
-
-		if (show_asteroids) {
-			for (int k = 0; k < asteroid_set.N_asteroids; k++) 
-				draw_wireframe(asteroid_set.drawables[k], environment);
-		}
 	}
 
 	environment.background_color = gui.brume_color;

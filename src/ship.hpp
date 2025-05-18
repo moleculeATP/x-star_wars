@@ -52,8 +52,6 @@ struct ship {
     numarray<rotation_transform> lasers_orientation;
     numarray<int> lasers_active;
 
-
-
     // Pointers to the global state of the inputs (keyboard, mouse, etc)
     input_devices* inputs;
     // Pointer to the global state of the window
@@ -67,7 +65,7 @@ struct ship {
 
     void draw(environment_generic_structure const& environment);
 
-    void idle_frame(float dt);
+    void idle_frame();
 
     void destruction_trigger(vec3 impact_pos, vec3 normal_destruction);
 
