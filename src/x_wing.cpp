@@ -75,33 +75,33 @@ namespace cgp {
             hierarchy["Top left wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, wing_angle);
             hierarchy["Bottom left wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, -wing_angle);
             hierarchy["Bottom right wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, wing_angle);
+
+            // Lasers
+            float dt = magnitude;
+            if (inputs->keyboard.is_pressed(GLFW_KEY_P) && laser_dt >= laser_delay) {
+                laser_dt = 0;
+                if (last_laser == N_lasers - 1) 
+                    last_laser = 0;
+                else last_laser += 1;
+                lasers_pos[last_laser] = hierarchy["Vaisseau base"].transform_local.translation + 2.0f * normalize(velocity);
+                lasers_velocity[last_laser] = lasers_speed * (lasers_pos[last_laser] - hierarchy["Vaisseau base"].transform_local.translation);
+                lasers_orientation[last_laser] = hierarchy["Vaisseau base"].transform_local.rotation * rotation_transform::from_axis_angle({0,1,0}, Pi/2.0f);
+                lasers_active[last_laser] = 1;
+            }else {
+                laser_dt += dt;
+            }
+
+            for (int i = 0; i < N_lasers; i++) {
+                if (lasers_active[i] == 0) continue;
+                vec3 velocity = lasers_velocity[i];
+                lasers_pos[i] += velocity * dt;
+                if (abs(lasers_pos[i][0]) > laser_bound || abs(lasers_pos[i][1]) > laser_bound || abs(lasers_pos[i][2]) > laser_bound)
+                    lasers_active[i] = 0;
+            }
         }else{
             if(inputs -> keyboard.is_pressed(GLFW_KEY_K)){
                 respawn();
             }
-        }
-
-        // Lasers
-        float dt = magnitude;
-        if (inputs->keyboard.is_pressed(GLFW_KEY_P) && laser_dt >= laser_delay) {
-            laser_dt = 0;
-            if (last_laser == N_lasers - 1) 
-                last_laser = 0;
-            else last_laser += 1;
-            lasers_pos[last_laser] = hierarchy["Vaisseau base"].transform_local.translation + 2.0f * normalize(velocity);
-            lasers_velocity[last_laser] = lasers_speed * (lasers_pos[last_laser] - hierarchy["Vaisseau base"].transform_local.translation);
-            lasers_orientation[last_laser] = hierarchy["Vaisseau base"].transform_local.rotation * rotation_transform::from_axis_angle({0,1,0}, Pi/2.0f);
-            lasers_active[last_laser] = 1;
-        }else {
-            laser_dt += dt;
-        }
-
-        for (int i = 0; i < N_lasers; i++) {
-            if (lasers_active[i] == 0) continue;
-            vec3 velocity = lasers_velocity[i];
-            lasers_pos[i] += velocity * dt;
-            if (abs(lasers_pos[i][0]) > laser_bound || abs(lasers_pos[i][1]) > laser_bound || abs(lasers_pos[i][2]) > laser_bound)
-                lasers_active[i] = 0;
         }
     }
 
