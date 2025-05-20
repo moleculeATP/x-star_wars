@@ -20,7 +20,9 @@ namespace cgp {
     vec3 dir_to_target = normalize(to_target);
 
     float ampl = 30;
-    velocity += ampl * turn_speed * dir_to_target * dt;
+    float var_max = 0.015f;
+    vec3 tmp = ampl * turn_speed * dir_to_target * dt;
+    velocity += normalize(tmp) * std::min(var_max, norm(tmp));
 
     if (norm(velocity) > speed_max)
         velocity = ampl * speed_max * normalize(velocity);

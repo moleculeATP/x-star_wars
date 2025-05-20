@@ -144,6 +144,7 @@ void scene_structure::initialize()
 	mesh_drawable cone;
 	cone.initialize_data_on_gpu(mesh_primitive_cone(0.1, 0.5, {0, 0, 0}, {1, 0, 0}));
 	aiship.hierarchy.add(cone, "ship", "Vaisseau base", {0, 0, 0});
+	aiship.hierarchy["Vaisseau base"].transform_local.translation = {5, 0, 0};
 
 }
 
@@ -221,8 +222,8 @@ void scene_structure::display_frame()
 	xwing_ship.idle_frame();
 	xwing_ship.draw(environment); //equivalent to draw(xwing, environment);
 
-	//aiship.idle_frame();
-	//aiship.draw(environment);
+	aiship.idle_frame();
+	aiship.draw(environment);
 
 	if (show_asteroids) asteroid_set.idle_frame(dt, xwing_ship.hierarchy["Vaisseau base"].drawable.model.translation);
 
@@ -278,16 +279,26 @@ void scene_structure::display_gui()
 
 void scene_structure::mouse_move_event()
 {
-	if (!inputs.keyboard.shift)
-		camera_control.action_mouse_move(environment.camera_view);
+	if (!inputs.keyboard.shift){
+		if(camera_fixe)
+			camera_control_fixe.action_mouse_move(environment.camera_view);
+		else
+			camera_control.action_mouse_move(environment.camera_view);
+	}
 }
 void scene_structure::mouse_click_event()
 {
-	camera_control.action_mouse_click(environment.camera_view);
+	if(camera_fixe)
+		camera_control_fixe.action_mouse_click(environment.camera_view);
+	else
+		camera_control.action_mouse_click(environment.camera_view);
 }
 void scene_structure::keyboard_event()
 {
-	camera_control.action_keyboard(environment.camera_view);	
+	if(camera_fixe)
+		camera_control_fixe.action_keyboard(environment.camera_view);
+	else
+		camera_control.action_keyboard(environment.camera_view);	
 }
 void scene_structure::idle_frame()
 {
