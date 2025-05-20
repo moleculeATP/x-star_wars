@@ -52,6 +52,12 @@ void scene_structure::initialize()
 		project::path + "shaders/shading_custom/shading_custom.frag.glsl"
 	);
 
+	opengl_shader_structure laser_shader;
+	laser_shader.load(
+		project::path + "shaders/shading_custom/laser.vert.glsl",
+		project::path + "shaders/shading_custom/laser.frag.glsl"
+	);
+
 	// Skybox
 	image_structure image_skybox_template = image_load_file(project::path+"assets/skybox_05.png");
 	// Split the image into a grid of 4 x 3 sub-images
@@ -104,7 +110,7 @@ void scene_structure::initialize()
 	if (show_asteroids) {
 		int N_uv = 100;
 		asteroid_set.N_mesh = 10;
-		asteroid_set.N_asteroids = 100;
+		asteroid_set.N_asteroids = 10;
 		std::vector<vec3> scales = std::vector<vec3>(asteroid_set.N_mesh, {rand_uniform(0.5, 6.0), rand_uniform(0.5, 1.5), rand_uniform(0.5, 1.5)});
 		asteroid_set.initialize(scales, N_uv, project::path + "assets/asteroid1.jpg", shader_custom);
 		asteroid_set.apply_perlin();
@@ -131,9 +137,9 @@ void scene_structure::initialize()
 	auto struct_wing = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__wing.obj");
 	xwing_ship.body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body);
 	xwing_ship.wing = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_wing);
-	xwing_ship.initialize(inputs, window, shader_custom);
+	xwing_ship.initialize(inputs, window, shader_custom, laser_shader);
 
-	aiship.initialize(inputs, window, shader_custom);
+	aiship.initialize(inputs, window, shader_custom, laser_shader);
 	aiship.target = &xwing_ship;
 	mesh_drawable cone;
 	cone.initialize_data_on_gpu(mesh_primitive_cone(0.1, 0.5, {0, 0, 0}, {1, 0, 0}));

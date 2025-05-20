@@ -13,8 +13,10 @@ struct x_wing : ship {
     float wing_angle = 0.f;
     float wing_speed = 0.3f;
 
+    numarray<std::string> canons_name = {"Top right laser", "Bottom left laser", "Top left laser", "Bottom right laser"};
+
     void respawn();
-    void initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader);
+    void initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader, opengl_shader_structure& laser_shader);
     void idle_frame();
     // void set_shader(opengl_shader_structure &shader);
 };

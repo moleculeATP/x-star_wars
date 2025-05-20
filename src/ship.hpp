@@ -44,7 +44,7 @@ struct ship {
     vec3 lasers_color = {1.0f, 0.1f, 0.88f};
     float laser_bound = 100.0f;
     float lasers_speed = 10.0f;
-    float laser_delay = 0.1f;
+    float laser_delay = 0.05f;
     float laser_dt = 0.0f;
     float d_light_max = 10.0f;
     numarray<vec3> lasers_velocity;
@@ -58,10 +58,11 @@ struct ship {
     window_structure* window;
 
     opengl_shader_structure* shader;
+    opengl_shader_structure* laser_shader;
 
     ship();
 
-    void initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader);
+    void initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader, opengl_shader_structure& laser_shader);
 
     void draw(environment_generic_structure const& environment);
 

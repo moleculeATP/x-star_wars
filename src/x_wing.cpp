@@ -4,8 +4,8 @@
 
 namespace cgp {
 
-    void x_wing::initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader){
-        ship::initialize(inputs, window, shader);
+    void x_wing::initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader, opengl_shader_structure& laser_shader){
+        ship::initialize(inputs, window, shader, laser_shader);
         float scaling = 0.04f;
         debris.resize(body.size() + 2 * wing.size());
 
@@ -21,6 +21,15 @@ namespace cgp {
         hierarchy.add(mesh_drawable(), "Top left wing", "Vaisseau base");
         hierarchy.add(mesh_drawable(), "Bottom left wing", "Vaisseau base");
         hierarchy.add(mesh_drawable(), "Bottom right wing", "Vaisseau base");
+        
+        float offset_x = 1.2f;
+        float offset_y = 0.95f;
+        float top_offset_z = -0.3f;
+        float bottom_offset_z = -0.4f;
+        hierarchy.add(mesh_drawable(), "Top right laser", "Top right wing", {offset_x, -offset_y, top_offset_z});
+        hierarchy.add(mesh_drawable(), "Top left laser", "Top left wing", {offset_x, offset_y, top_offset_z});
+        hierarchy.add(mesh_drawable(), "Bottom right laser", "Bottom right wing", {offset_x, -offset_y, bottom_offset_z});
+        hierarchy.add(mesh_drawable(), "Bottom left laser", "Bottom left wing", {offset_x, offset_y, bottom_offset_z});
 
         for (int k = 0; k < wing.size(); ++k){
             mesh_drawable wing_ = wing[k];
@@ -54,7 +63,7 @@ namespace cgp {
     }
 
     void x_wing::respawn() {
-        x_wing::initialize(*inputs, *window, *shader);
+        x_wing::initialize(*inputs, *window, *shader, *laser_shader);
     }
     
 
@@ -83,10 +92,15 @@ namespace cgp {
                 if (last_laser == N_lasers - 1) 
                     last_laser = 0;
                 else last_laser += 1;
-                lasers_pos[last_laser] = hierarchy["Vaisseau base"].transform_local.translation + 2.0f * normalize(velocity);
-                lasers_velocity[last_laser] = lasers_speed * (lasers_pos[last_laser] - hierarchy["Vaisseau base"].transform_local.translation);
+
+                lasers_pos[last_laser] = hierarchy[canons_name[last_laser % 4]].drawable.hierarchy_transform_model.translation;
+                lasers_velocity[last_laser] = lasers_speed * normalize(velocity);
                 lasers_orientation[last_laser] = hierarchy["Vaisseau base"].transform_local.rotation * rotation_transform::from_axis_angle({0,1,0}, Pi/2.0f);
                 lasers_active[last_laser] = 1;
+
+                // lasers_pos[last_laser] = hierarchy["Vaisseau base"].transform_local.translation + 2.0f * normalize(velocity);
+                // lasers_velocity[last_laser] = lasers_speed * (lasers_pos[last_laser] - hierarchy["Vaisseau base"].transform_local.translation);
+                
             }else {
                 laser_dt += dt;
             }
@@ -103,6 +117,8 @@ namespace cgp {
                 respawn();
             }
         }
+
+        
     }
 
     // void x_wing::set_shader(opengl_shader_structure &shader) {

@@ -14,11 +14,12 @@ ship::ship()
 
 }
 
-void ship::initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader)
+void ship::initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader, opengl_shader_structure& laser_shader)
 {
     this->inputs = &inputs;
     this->window = &window;
     this->shader = &shader;
+    this->laser_shader = &laser_shader;
 
     // Create the arrow pointing in the up direction
     mesh arrow_up_mesh = mesh_primitive_cylinder(0.005f, {0, 0, 0}, up/3);
@@ -47,8 +48,9 @@ void ship::initialize(input_devices& inputs, window_structure& window, opengl_sh
     destruction = false;
 
     // Lasers
-    mesh laser_mesh = mesh_primitive_cylinder(0.08f, {0,0,0}, {0,0,0.2f}, 10, 10, true);
+    mesh laser_mesh = mesh_primitive_cylinder(0.03f, {0,0,0}, {0,0,0.2f}, 10, 10, true);
     laser.initialize_data_on_gpu(laser_mesh);
+    laser.shader = laser_shader;
     lasers_pos.resize(N_lasers);
     lasers_velocity.resize(N_lasers);
     lasers_orientation.resize(N_lasers);
@@ -57,14 +59,13 @@ void ship::initialize(input_devices& inputs, window_structure& window, opengl_sh
 }
 
 void ship::draw(environment_generic_structure const& environment){
-    if(destruction){
-        for(int k = 0; k < debris.size(); ++k){
-            cgp::draw(debris[k], environment);
-        }
-    }else{
-        hierarchy.update_local_to_global_coordinates();
-        cgp::draw(hierarchy, environment);
-    }
+    hierarchy.update_local_to_global_coordinates();
+    if(destruction)
+        for(int k = 0; k < debris.size(); ++k)
+            cgp::draw(debris[k], environment);   
+    else cgp::draw(hierarchy, environment);
+    
+    // Lasers
     for (int i = 0; i < lasers_pos.size(); i++) {
         if (lasers_active[i] == 1) {
             laser.model.rotation = lasers_orientation[i];
@@ -72,6 +73,7 @@ void ship::draw(environment_generic_structure const& environment){
             cgp::draw(laser, environment);
         }
     }
+    
 }
 
 void ship::destruction_trigger(vec3 impact_pos, vec3 normal_destruction){
