@@ -9,6 +9,7 @@ namespace cgp {
         float scaling = 0.04f;
         debris.resize(body.size() + 2 * wing.size());
 
+        
         for (int k = 0; k < body.size(); ++k){
             body[k].model.scaling = scaling;
             std::string name = "Body " + str(k);
@@ -17,19 +18,24 @@ namespace cgp {
             hierarchy[name].drawable.shader = shader;
         }
 
-        hierarchy.add(mesh_drawable(), "Top right wing", "Vaisseau base");
-        hierarchy.add(mesh_drawable(), "Top left wing", "Vaisseau base");
-        hierarchy.add(mesh_drawable(), "Bottom left wing", "Vaisseau base");
-        hierarchy.add(mesh_drawable(), "Bottom right wing", "Vaisseau base");
+        mesh_drawable tmp = mesh_drawable();
+        tmp.initialize_data_on_gpu(mesh_primitive_triangle());
+        tmp.model.scaling = 0.0001f;
+
+        hierarchy.add(tmp, "Top right wing", "Vaisseau base");
+        hierarchy.add(tmp, "Top left wing", "Vaisseau base");
+        hierarchy.add(tmp, "Bottom left wing", "Vaisseau base");
+        hierarchy.add(tmp, "Bottom right wing", "Vaisseau base");
         
         float offset_x = 1.2f;
         float offset_y = 0.95f;
         float top_offset_z = -0.3f;
         float bottom_offset_z = -0.4f;
-        hierarchy.add(mesh_drawable(), "Top right laser", "Top right wing", {offset_x, -offset_y, top_offset_z});
-        hierarchy.add(mesh_drawable(), "Top left laser", "Top left wing", {offset_x, offset_y, top_offset_z});
-        hierarchy.add(mesh_drawable(), "Bottom right laser", "Bottom right wing", {offset_x, -offset_y, bottom_offset_z});
-        hierarchy.add(mesh_drawable(), "Bottom left laser", "Bottom left wing", {offset_x, offset_y, bottom_offset_z});
+
+        hierarchy.add(tmp, "Top right laser", "Top right wing", {offset_x, -offset_y, top_offset_z});
+        hierarchy.add(tmp, "Top left laser", "Top left wing", {offset_x, offset_y, top_offset_z});
+        hierarchy.add(tmp, "Bottom right laser", "Bottom right wing", {offset_x, -offset_y, bottom_offset_z});
+        hierarchy.add(tmp, "Bottom left laser", "Bottom left wing", {offset_x, offset_y, bottom_offset_z});
 
         for (int k = 0; k < wing.size(); ++k){
             mesh_drawable wing_ = wing[k];
@@ -84,6 +90,7 @@ namespace cgp {
             hierarchy["Top left wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, wing_angle);
             hierarchy["Bottom left wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, -wing_angle);
             hierarchy["Bottom right wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, wing_angle);
+            
 
             // Lasers
             float dt = magnitude;

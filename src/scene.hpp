@@ -5,6 +5,7 @@
 #include "ship.hpp"
 #include "x_wing.hpp"
 #include "ai_ship.hpp"
+#include "passiv_ship.hpp"
 #include "environment.hpp"
 #include "camera_combat_mode/camera_combat_mode.hpp"
 #include "asteroid.hpp"
@@ -70,6 +71,7 @@ struct scene_structure : cgp::scene_inputs_generic {
 
 	x_wing xwing_ship;
 	ai_ship aiship;
+	passiv_ship passivship;
 	asteroids asteroid_set;
 
 	skybox_drawable skybox;

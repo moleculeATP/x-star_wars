@@ -139,13 +139,22 @@ void scene_structure::initialize()
 	xwing_ship.wing = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_wing);
 	xwing_ship.initialize(inputs, window, shader_custom, laser_shader);
 
+	/**
 	aiship.initialize(inputs, window, shader_custom, laser_shader);
 	aiship.target = &xwing_ship;
-	mesh_drawable cone;
-	cone.initialize_data_on_gpu(mesh_primitive_cone(0.1, 0.5, {0, 0, 0}, {1, 0, 0}));
-	aiship.hierarchy.add(cone, "ship", "Vaisseau base", {0, 0, 0});
+	mesh_drawable tie; 
+	tie.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/tie_model/tie.obj"));
+	tie.model.scaling = 0.07f;
+	aiship.hierarchy.add(tie, "ship", "Vaisseau base", {0, 0, 0});
 	aiship.hierarchy["Vaisseau base"].transform_local.translation = {5, 0, 0};
-
+	*/
+	
+	passivship.initialize(inputs, window, shader_custom, laser_shader);
+	mesh_drawable tie; 
+	tie.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/tie_model/tie.obj"));
+	tie.model.scaling = 0.07f;
+	passivship.hierarchy.add(tie, "ship", "Vaisseau base", {0, 0, 0});
+	passivship.hierarchy["Vaisseau base"].transform_local.translation = {5, 0, 0};
 }
 
 // This function is called permanently at every new frame
@@ -222,8 +231,8 @@ void scene_structure::display_frame()
 	xwing_ship.idle_frame();
 	xwing_ship.draw(environment); //equivalent to draw(xwing, environment);
 
-	aiship.idle_frame();
-	aiship.draw(environment);
+	passivship.idle_frame();
+	passivship.draw(environment);
 
 	if (show_asteroids) asteroid_set.idle_frame(dt, xwing_ship.hierarchy["Vaisseau base"].drawable.model.translation);
 

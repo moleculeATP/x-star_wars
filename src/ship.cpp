@@ -47,6 +47,7 @@ void ship::initialize(input_devices& inputs, window_structure& window, opengl_sh
     STOP = false;
     destruction = false;
 
+    
     // Lasers
     mesh laser_mesh = mesh_primitive_cylinder(0.03f, {0,0,0}, {0,0,0.2f}, 10, 10, true);
     laser.initialize_data_on_gpu(laser_mesh);
@@ -56,6 +57,7 @@ void ship::initialize(input_devices& inputs, window_structure& window, opengl_sh
     lasers_orientation.resize(N_lasers);
     const std::vector<int> tmp = std::vector<int>(N_lasers, 0);
     lasers_active = numarray<int>(tmp);
+    
 }
 
 void ship::draw(environment_generic_structure const& environment){
@@ -108,7 +110,7 @@ void ship::idle_frame()
         vec3 angular_acc = {0, 0, 0};  // valeur temporaire locale
 
         if (inputs->keyboard.is_pressed(GLFW_KEY_Q)) // roll left
-            angular_acc += -roll_speed * velocity;
+            angular_acc += -roll_speed * velocity; // * magnitude if needed
         if (inputs->keyboard.is_pressed(GLFW_KEY_E)) // roll right
             angular_acc +=  roll_speed * velocity;
 
