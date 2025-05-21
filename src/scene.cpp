@@ -149,11 +149,10 @@ void scene_structure::initialize()
 	aiship.hierarchy["Vaisseau base"].transform_local.translation = {5, 0, 0};
 	*/
 	
+	auto struct_body_2 = mesh_load_file_obj_advanced(project::path + "assets/tie_model/", "tie.obj");
+	passivship.body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body_2);
+
 	passivship.initialize(inputs, window, shader_custom, laser_shader);
-	mesh_drawable tie; 
-	tie.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/tie_model/tie.obj"));
-	tie.model.scaling = 0.07f;
-	passivship.hierarchy.add(tie, "ship", "Vaisseau base", {0, 0, 0});
 	passivship.hierarchy["Vaisseau base"].transform_local.translation = {5, 0, 0};
 }
 
