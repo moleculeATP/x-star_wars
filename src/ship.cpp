@@ -22,7 +22,7 @@ void ship::initialize(input_devices& inputs, window_structure& window, opengl_sh
     this->laser_shader = &laser_shader;
 
     // Create the arrow pointing in the up direction
-    mesh arrow_up_mesh = mesh_primitive_cylinder(0.005f, {0, 0, 0}, up/3);
+    mesh arrow_up_mesh = mesh_primitive_cylinder(0.002f, {0, 0, 0}, up/3);
     arrow_up.initialize_data_on_gpu(arrow_up_mesh);
     arrow_up.material.color = {0, 0, 1};
 
@@ -63,19 +63,20 @@ void ship::initialize(input_devices& inputs, window_structure& window, opengl_sh
 void ship::draw(environment_generic_structure const& environment){
     hierarchy.update_local_to_global_coordinates();
     if(destruction)
-        for(int k = 0; k < debris.size(); ++k)
-            cgp::draw(debris[k], environment);   
-    else cgp::draw(hierarchy, environment);
-    
-    // Lasers
-    for (int i = 0; i < lasers_pos.size(); i++) {
-        if (lasers_active[i] == 1) {
-            laser.model.rotation = lasers_orientation[i];
-            laser.model.translation = lasers_pos[i];
-            cgp::draw(laser, environment);
-        }
+        for(int k = 0; k < debris.size(); ++k) {
+            cgp::draw(debris[k], environment);  
+        } 
+    else {
+        cgp::draw(hierarchy, environment);
+        // Lasers
+        // for (int i = 0; i < lasers_pos.size(); i++) {
+        //     if (lasers_active[i] == 1) {
+        //         laser.model.rotation = lasers_orientation[i];
+        //         laser.model.translation = lasers_pos[i];
+        //         cgp::draw(laser, environment);
+        //     }
+        // }
     }
-    
 }
 
 void ship::destruction_trigger(vec3 impact_pos, vec3 normal_destruction){
@@ -105,7 +106,7 @@ void ship::idle_frame()
 
 	float const magnitude = inputs->time_interval;
 
-    if(! destruction){
+    if(!destruction){
         // flight mod
         vec3 angular_acc = {0, 0, 0};  // valeur temporaire locale
 

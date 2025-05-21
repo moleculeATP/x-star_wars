@@ -133,6 +133,18 @@ namespace cgp {
     //     for (mesh_drawable md: wing) md.shader = shader;
     // }
 
+    void x_wing::draw_lasers(environment_generic_structure const& environment) {
+        // Lasers
+        for (int i = 0; i < lasers_pos.size(); i++) {
+            if (lasers_active[i] == 1) {
+                laser.model.rotation = lasers_orientation[i];
+                laser.model.translation = lasers_pos[i];
+                laser.material.color = x_wing::lasers_color;
+                cgp::draw(laser, environment);
+            }
+        }
+    }
+
 }
 
     
