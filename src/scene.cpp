@@ -4,6 +4,7 @@ using namespace cgp;
 
 
 bool show_asteroids = true;
+int nb_of_ia_combat = 3; // 8 AI ship fighting each other
 
 // This function is called only once at the beginning of the program
 // This function can contain any complex operation that can be pre-computed once
@@ -132,28 +133,77 @@ void scene_structure::initialize()
 	sphere.shader = shader_mesh;
 	ground.shader = shader_custom;
 
-	xwing_ship = x_wing();
 	auto struct_body = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__body.obj");
 	auto struct_wing = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__wing.obj");
+	auto struct_body_2 = mesh_load_file_obj_advanced(project::path + "assets/tie_model/", "tie.obj");
 	xwing_ship.body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body);
 	xwing_ship.wing = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_wing);
 	xwing_ship.initialize(inputs, window, shader_custom, laser_shader);
 
-	/**
-	aiship.initialize(inputs, window, shader_custom, laser_shader);
-	aiship.target = &xwing_ship;
-	mesh_drawable tie; 
-	tie.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/tie_model/tie.obj"));
-	tie.model.scaling = 0.07f;
-	aiship.hierarchy.add(tie, "ship", "Vaisseau base", {0, 0, 0});
-	aiship.hierarchy["Vaisseau base"].transform_local.translation = {5, 0, 0};
-	*/
+	/** code test IA
+	xwing_aiship.body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body);
+	xwing_aiship.wing = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_wing);
+	xwing_aiship.initialize(inputs, window, shader_custom, laser_shader);
+	xwing_aiship.hierarchy["Vaisseau base"].transform_local.translation = {8, 5, 2};
+	xwing_aiship.set_target(&passivship);
+	xwing_aiship.speed = 0.025f;
+
+	auto struct_body_2 = mesh_load_file_obj_advanced(project::path + "assets/tie_model/", "tie.obj");
+	passivship.body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body_2);
+	passivship.initialize(inputs, window, shader_custom, laser_shader);
+	passivship.hierarchy["Vaisseau base"].transform_local.translation = {5, 0, 0};
+	passivship.speed = 0.028f;
 	
 	auto struct_body_2 = mesh_load_file_obj_advanced(project::path + "assets/tie_model/", "tie.obj");
 	passivship.body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body_2);
 
 	passivship.initialize(inputs, window, shader_custom, laser_shader);
 	passivship.hierarchy["Vaisseau base"].transform_local.translation = {5, 0, 0};
+	*/
+
+	std::vector<mesh_drawable> x_wing_body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body);
+	std::vector<mesh_drawable> x_wing_wing = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_wing);
+	std::vector<mesh_drawable> tie_body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body_2);
+	victims.resize(nb_of_ia_combat);
+	chads.resize(nb_of_ia_combat);
+	
+	for(int i = 0; i < nb_of_ia_combat; i++){
+
+		float bound = 50; // spawn bound
+		if(i % 2 == 0){
+			x_wing_passiv_ship victim;
+			ai_ship chad;
+			victim.body = x_wing_body;
+			victim.wing = x_wing_wing;
+			victim.initialize(inputs, window, shader_custom, laser_shader);
+			chad.body = tie_body;
+			chad.initialize(inputs, window, shader_custom, laser_shader);
+
+			victims[i] = victim;
+			chads[i] = chad;
+		}else{
+			x_wing_ai_ship chad;
+			passiv_ship victim;
+			chad.body = x_wing_body;
+			chad.wing = x_wing_wing;
+			chad.initialize(inputs, window, shader_custom, laser_shader);
+			victim.body = tie_body;
+			victim.initialize(inputs, window, shader_custom, laser_shader);
+
+			victims[i] = victim;
+			chads[i] = chad;
+		}
+		
+		chads[i].speed = 0.04f;
+		victims[i].speed = 0.043f;
+
+		chads[i].set_target(&victims[i]);
+
+		victims[i].hierarchy["Vaisseau base"].transform_local.translation = 
+			vec3(rand_uniform(-bound, bound)/2, rand_uniform(-bound, bound)/2, rand_uniform(-bound, bound)/2);
+		chads[i].hierarchy["Vaisseau base"].transform_local.translation = 
+			vec3(rand_uniform(-bound, bound)/2, rand_uniform(-bound, bound)/2, rand_uniform(-bound, bound)/2);
+	}
 }
 
 // This function is called permanently at every new frame
@@ -230,8 +280,20 @@ void scene_structure::display_frame()
 	xwing_ship.idle_frame();
 	xwing_ship.draw(environment); //equivalent to draw(xwing, environment);
 
+	/**
 	passivship.idle_frame();
 	passivship.draw(environment);
+
+	xwing_aiship.idle_frame();
+	xwing_aiship.draw(environment);
+	*/
+
+	for(int i = 0; i < nb_of_ia_combat; i++){
+		victims[i].idle_frame();
+		chads[i].idle_frame();
+		victims[i].draw(environment);
+		chads[i].draw(environment);
+	}
 
 	if (show_asteroids) asteroid_set.idle_frame(dt, xwing_ship.hierarchy["Vaisseau base"].drawable.model.translation);
 

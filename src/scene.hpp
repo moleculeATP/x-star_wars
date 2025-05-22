@@ -1,11 +1,14 @@
 #pragma once
 
-
 #include "cgp/cgp.hpp"
+
 #include "ship.hpp"
 #include "x_wing.hpp"
 #include "ai_ship.hpp"
 #include "passiv_ship.hpp"
+#include "x_wing_ai_ship.hpp"
+#include "x_wing_passiv_ship.hpp"
+
 #include "environment.hpp"
 #include "camera_combat_mode/camera_combat_mode.hpp"
 #include "asteroid.hpp"
@@ -72,7 +75,12 @@ struct scene_structure : cgp::scene_inputs_generic {
 	x_wing xwing_ship;
 	ai_ship aiship;
 	passiv_ship passivship;
+	x_wing_passiv_ship xwing_passivship;
+	x_wing_ai_ship xwing_aiship;
 	asteroids asteroid_set;
+
+	std::vector<passiv_ship> victims;
+	std::vector<ai_ship> chads;
 
 	skybox_drawable skybox;
 

@@ -26,9 +26,9 @@ struct ship {
     float roll_speed=1.2f;
     float turn_speed=.8f;
 
-    float speed=.01f;
+    float speed=.03f;
     float speed_increase=1.01f;
-    float speed_max=0.03f;
+    float speed_max=0.06f;
     float speed_min=0.01f;
 
     float angular_speed=2.f;

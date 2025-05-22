@@ -2,6 +2,20 @@
 #include <iostream> 
 
 namespace cgp {
+    void ai_ship::initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader, opengl_shader_structure& laser_shader){
+        ship::initialize(inputs, window, shader, laser_shader);
+        float scaling = 0.05f;
+        debris.resize(body.size());
+        
+        for (int k = 0; k < body.size(); ++k){
+            body[k].model.scaling = scaling;
+            std::string name = "Body " + str(k);
+            hierarchy.add(body[k], name, "Vaisseau base");
+            debris[k] = body[k];
+            hierarchy[name].drawable.shader = shader;
+        }
+    }
+
     void ai_ship::idle_frame()
 {
     assert_cgp_no_msg(inputs != nullptr);

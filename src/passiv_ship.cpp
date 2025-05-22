@@ -8,7 +8,6 @@ namespace cgp{
         assert_cgp_no_msg(inputs != nullptr);
         assert_cgp_no_msg(window != nullptr);
 
-        speed = 0.02f;
         
         if(time_remaining > 0.0f){
             time_remaining -= inputs->time_interval;
@@ -69,8 +68,8 @@ namespace cgp{
     }
 
     void passiv_ship::initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader, opengl_shader_structure& laser_shader){
-        float scaling = 0.07f;
         ship::initialize(inputs, window, shader, laser_shader);
+        float scaling = 0.07f;
         debris.resize(body.size());
 
         

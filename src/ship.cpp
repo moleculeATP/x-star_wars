@@ -184,7 +184,7 @@ void ship::idle_frame()
 		    debris[k].model.rotation *= rT;
 
             if(inputs -> keyboard.is_pressed(GLFW_KEY_K)){
-                respawn(vec3{0, 0, 0}, rotation_transform::from_axis_angle({0, 1, 0}, 0));
+                respawn(vec3{0, 0, 0}, rotation_transform::from_frame_transform({1,0,0}, {0,0,1}, {1, 0, 0}, {0, 0, 1}));
             }
         }
     }
