@@ -71,6 +71,9 @@ struct ship {
     void destruction_trigger(vec3 impact_pos, vec3 normal_destruction);
     void respawn(vec3 position, rotation_transform rotation);
 
+    void set_mesh_shader(opengl_shader_structure& shader);
+    void set_laser_shader(opengl_shader_structure& laser_shader);
+
 protected:
     bool is_cursor_trapped; // true = cursor captured (/infinite motion), false = cursor free
 };

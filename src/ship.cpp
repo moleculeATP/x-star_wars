@@ -47,36 +47,24 @@ void ship::initialize(input_devices& inputs, window_structure& window, opengl_sh
     STOP = false;
     destruction = false;
 
-    
     // Lasers
     mesh laser_mesh = mesh_primitive_cylinder(0.03f, {0,0,0}, {0,0,0.2f}, 10, 10, true);
     laser.initialize_data_on_gpu(laser_mesh);
+    laser.material.color = vec3(1, 1, 1);
     laser.shader = laser_shader;
     lasers_pos.resize(N_lasers);
     lasers_velocity.resize(N_lasers);
     lasers_orientation.resize(N_lasers);
     const std::vector<int> tmp = std::vector<int>(N_lasers, 0);
     lasers_active = numarray<int>(tmp);
-    
 }
 
 void ship::draw(environment_generic_structure const& environment){
     hierarchy.update_local_to_global_coordinates();
     if(destruction)
-        for(int k = 0; k < debris.size(); ++k) {
+        for(int k = 0; k < debris.size(); ++k)
             cgp::draw(debris[k], environment);  
-        } 
-    else {
-        cgp::draw(hierarchy, environment);
-        // Lasers
-        for (int i = 0; i < lasers_pos.size(); i++) {
-            if (lasers_active[i] == 1) {
-                laser.model.rotation = lasers_orientation[i];
-                laser.model.translation = lasers_pos[i];
-                cgp::draw(laser, environment);
-            }
-        }
-    }
+    else cgp::draw(hierarchy, environment);
 }
 
 void ship::destruction_trigger(vec3 impact_pos, vec3 normal_destruction){
@@ -188,5 +176,17 @@ void ship::idle_frame()
             }
         }
     }
+}
+
+void ship::set_mesh_shader(opengl_shader_structure& shader) {
+    this->shader = &shader;
+    for (int i = 0; i < hierarchy.elements.size(); i++) {
+        hierarchy.elements[i].drawable.shader = shader;
+    } 
+}
+    
+void ship::set_laser_shader(opengl_shader_structure& laser_shader){
+    this->laser_shader = &laser_shader;
+    laser.shader = laser_shader;
 }
 }

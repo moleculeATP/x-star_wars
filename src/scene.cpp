@@ -2,78 +2,59 @@
 
 using namespace cgp;
 
-
 bool show_asteroids = true;
 int nb_of_ia_combat = 3; // 8 AI ship fighting each other
 
-// This function is called only once at the beginning of the program
-// This function can contain any complex operation that can be pre-computed once
 void scene_structure::initialize()
 {
-	
-	// Set the behavior of the camera and its initial position
-	// ********************************************** //
 	if(camera_fixe){
 		camera_control_fixe.initialize(inputs, window);
 	}
 	else{
 		camera_control.initialize(inputs, window);
 	}
-	
-	//camera_control.set_rotation_axis_z(); // camera rotates around z-axis
-	//   look_at(camera_position, targeted_point, up_direction)
+
 	camera_control_fixe.look_at(
 		{-2.0f, 0.0f, 1.0f},
 		{0.0f, 0.0f, 0.0f},
 		{0.0f, 0.0f, 1.0f} // up direction
 	);
-	
-	/** 
-	// parametre controle camera mode combat
-	camera_control.speed = 0.4f;
-	camera_control.speed_increase = 1.02f;
-	camera_control.speed_max = 1.2f;
-	camera_control.speed_min = 0.4f;
-		*/
 
 	display_info();
 
 	// Create the global (x,y,z) frame
 	global_frame.initialize_data_on_gpu(mesh_primitive_frame());
 
-	// Load shaders
-	opengl_shader_structure shader_mesh;
+	// ---------------- Loading shaders ----------------
+	
 	shader_mesh.load(
 		project::path + "shaders/mesh/mesh.vert.glsl",
 		project::path + "shaders/mesh/mesh.frag.glsl");
 
-	opengl_shader_structure shader_custom;
+	
 	shader_custom.load(
 		project::path + "shaders/shading_custom/shading_custom.vert.glsl",
 		project::path + "shaders/shading_custom/shading_custom.frag.glsl"
 	);
 
-	opengl_shader_structure laser_shader;
 	laser_shader.load(
-		project::path + "shaders/shading_custom/laser.vert.glsl",
+		project::path + "shaders/shading_custom/shading_custom.vert.glsl",
 		project::path + "shaders/shading_custom/laser.frag.glsl"
 	);
 
-	// Skybox
+	// ---------------- Skybox ----------------
 	image_structure image_skybox_template = image_load_file(project::path+"assets/skybox_05.png");
 	// Split the image into a grid of 4 x 3 sub-images
 	std::vector<image_structure> image_grid = image_split_grid(image_skybox_template, 4, 3);
 	skybox.initialize_data_on_gpu();
 	skybox.texture.initialize_cubemap_on_gpu(image_grid[10], image_grid[4], image_grid[9], image_grid[11], image_grid[1], image_grid[7]);
 
-	// Create the shapes seen in the 3D scene
-	// ********************************************** //
+	// ---------------------------- Shapes ----------------------------
 	cube.initialize_data_on_gpu(mesh_primitive_cube(/*center*/{ 0,0,0 }, /*edge length*/ 1.0f));
 	cube.material.color = { 1,1,0 };  
 	cube.model.translation = { 1,3,0 }; 
 
-	// Same process for the ground which is a plane 
-	//  A quadrangle is defined a plane with 4-extremal corners.
+	// Ground
 	int N = 10;
 	float L_ground = 10.0f;
 	float z_ground = -0.51f;
@@ -106,8 +87,11 @@ void scene_structure::initialize()
 	camel.model.scaling = 0.1f;
 	camel.model.translation = { -1,1,0.5f };
 
+	// Sphere used to display the position of a light
+	sphere_light.initialize_data_on_gpu(mesh_primitive_sphere(0.2f));
+	laser_shot.initialize_data_on_gpu(mesh_primitive_ellipsoid());
 
-	// Asteroid mesh
+	// Asteroids
 	if (show_asteroids) {
 		int N_uv = 100;
 		asteroid_set.N_mesh = 10;
@@ -115,14 +99,7 @@ void scene_structure::initialize()
 		std::vector<vec3> scales = std::vector<vec3>(asteroid_set.N_mesh, {rand_uniform(0.5, 6.0), rand_uniform(0.5, 1.5), rand_uniform(0.5, 1.5)});
 		asteroid_set.initialize(scales, N_uv, project::path + "assets/asteroid1.jpg", shader_custom);
 		asteroid_set.apply_perlin();
-		// for (int k = 0; k < asteroid_set.N_mesh; k++) {
-		// 	asteroid_set.drawables[k].vbo_color.update(asteroid_set.meshes[k].color);
-		// }
 	}
-
-	// Sphere used to display the position of a light
-	sphere_light.initialize_data_on_gpu(mesh_primitive_sphere(0.2f));
-	laser_shot.initialize_data_on_gpu(mesh_primitive_ellipsoid());
 
 	// Remove warnings for unset uniforms
 	cgp_warning::max_warning = 0;
@@ -206,8 +183,6 @@ void scene_structure::initialize()
 	}
 }
 
-// This function is called permanently at every new frame
-// Note that you should avoid having costly computation and large allocation defined there. This function is mostly used to call the draw() functions on pre-existing data.
 void scene_structure::display_frame()
 {
 	// Update time
@@ -219,7 +194,6 @@ void scene_structure::display_frame()
 	draw(skybox, environment);
 	glDepthMask(GL_TRUE);  // re-activate depth-buffer write
 
-
 	// Set additional uniform parameters to the shader
 	environment.uniform_generic.uniform_float["ambiant"] = gui.ambiant;
 	environment.uniform_generic.uniform_float["diffus"] = gui.diffus;
@@ -228,40 +202,18 @@ void scene_structure::display_frame()
 	environment.uniform_generic.uniform_vec3["light_color"] = gui.light_color;
 	environment.uniform_generic.uniform_vec3["brume_color"] = gui.brume_color;
 	environment.uniform_generic.uniform_vec3["light_position"] = gui.light_position;
+	environment.uniform_generic.uniform_float["distance_xwing"] = 1.0f;
+	environment.uniform_generic.uniform_vec3["camera_pos"] = camera_control.camera_model.position();
+	environment.uniform_generic.uniform_mat4["view"] = camera_control.camera_model.matrix_view();
+	// environment.background_color = gui.brume_color;
 
 	environment.uniform_generic.uniform_int["N_lights"] = 20;
 	environment.uniform_generic.uniform_vec3["light_colors[0]"] = gui.light_color;
 	environment.uniform_generic.uniform_vec3["light_positions[0]"] = gui.light_position;
 	environment.uniform_generic.uniform_float["d_light_max[0]"] = -1.0f;
 	environment.uniform_generic.uniform_int["active_lights[0]"] = 1;
-
-	sphere_light.model.translation = gui.light_position;
-	sphere_light.material.color = gui.light_color * 0.8f;
-	sphere_light.material.phong.ambient = 1;
-	sphere_light.material.phong.diffuse = 0;
-	sphere_light.material.phong.specular = 0;
-	draw(sphere_light, environment);
-
-	
-	environment.uniform_generic.uniform_float["distance_xwing"] = 1.0f;
-	environment.uniform_generic.uniform_vec3["camera_pos"] = camera_control.camera_model.position();
-	//environment.uniform_generic.uniform_mat4["view"] = camera_control.camera_model.matrix_view();
-
-	/**
-	vec3 xwing_position = camera_control.camera_model.position() + camera_control.camera_model.front();
-	vec3 front = normalize(camera_control.camera_model.front());
-	vec3 up_cam = normalize(camera_control.camera_model.up());
-	vec3 right = normalize(cross(up_cam, front));
-	vec3 up = cross(front, right);  // Recalculer up pour assurer l'orthogonalité
-
-	mat3 R = {right, up, front};
-
-
-	xwing.model.translation = xwing_position;
-	xwing.model.rotation = rotation_transform::from_matrix(R);
-	**/
-
-	// Lasers
+	// Uniform variables for Lasers lights
+	environment.uniform_generic.uniform_vec3["color"] = xwing_ship.laser.material.color;
 	for (int i = 1; i < xwing_ship.N_lasers; i ++) {
 		std::string uniform_color = "light_colors[" + std::to_string(i) + "]";
 		std::string uniform_pos = "light_positions[" + std::to_string(i) + "]";
@@ -277,8 +229,20 @@ void scene_structure::display_frame()
 		}
 	}
 
+	sphere_light.model.translation = gui.light_position;
+	sphere_light.material.color = gui.light_color * 0.8f;
+	sphere_light.material.phong.ambient = 1;
+	sphere_light.material.phong.diffuse = 0;
+	sphere_light.material.phong.specular = 0;
+
+	// Update scene objects
 	xwing_ship.idle_frame();
-	xwing_ship.draw(environment); //equivalent to draw(xwing, environment);
+	for(int i = 0; i < nb_of_ia_combat; i++){
+		victims[i].idle_frame();
+		chads[i].idle_frame();
+	}
+	if (show_asteroids) asteroid_set.idle_frame(dt, xwing_ship.hierarchy["Vaisseau base"].drawable.model.translation);
+	idle_frame();
 
 	/**
 	passivship.idle_frame();
@@ -288,45 +252,32 @@ void scene_structure::display_frame()
 	xwing_aiship.draw(environment);
 	*/
 
-	for(int i = 0; i < nb_of_ia_combat; i++){
-		victims[i].idle_frame();
-		chads[i].idle_frame();
-		victims[i].draw(environment);
-		chads[i].draw(environment);
-	}
-
-	if (show_asteroids) asteroid_set.idle_frame(dt, xwing_ship.hierarchy["Vaisseau base"].drawable.model.translation);
-
-	idle_frame();
-	
-	// conditional display of the global frame (set via the GUI)
-	if (gui.display_frame)
-		draw(global_frame, environment);
-
-	// the general syntax to display a mesh is:
-	//   draw(mesh_drawableName, environment);
-	// Note: scene is used to set the uniform parameters associated to the camera, light, etc. to the shader
+	// Draw objects
 	draw(ground, environment);
 	draw(cube, environment);	
 	draw(sphere, environment);
 	draw(camel, environment);
-
-	if (show_asteroids)
-		asteroid_set.draw(environment, gui.display_wireframe);
+	draw(sphere_light, environment);
+	xwing_ship.draw(environment);
+	xwing_ship.draw_lasers(environment);
+	passivship.draw(environment);
+	for(int i = 0; i < nb_of_ia_combat; i++){
+		victims[i].draw(environment);
+		chads[i].draw(environment);
+	}
+	if (show_asteroids) asteroid_set.draw(environment, gui.display_wireframe);
+	if (gui.display_frame) draw(global_frame, environment);
+	if (gui.display_ship_arrow) {
+		draw(xwing_ship.arrow_up, environment);
+		draw(xwing_ship.arrow_velocity, environment);
+		draw(xwing_ship.arrow_left, environment);
+	}
 
 	if (gui.display_wireframe) {
 		draw_wireframe(ground, environment);
 		draw_wireframe(sphere, environment);
 		draw_wireframe(cube, environment);
 		draw_wireframe(camel, environment);
-	}
-
-	environment.background_color = gui.brume_color;
-
-	if (gui.display_ship_arrow) {
-		draw(xwing_ship.arrow_up, environment);
-		draw(xwing_ship.arrow_velocity, environment);
-		draw(xwing_ship.arrow_left, environment);
 	}
 
 }

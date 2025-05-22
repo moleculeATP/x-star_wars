@@ -78,18 +78,6 @@ void main()
             light_intensity = (1.0f - decrease_scale);
         }
 
-        /*
-        vec3 u_light = normalize(light_positions[i] - fragment.position);
-        vec3 u_reflect = reflect(-u_light, N);
-        vec3 u_view = normalize(camera_position - fragment.position);
-
-        vec3 C_diffuse_ambiant = (ambiant + diffus * (max(0.0f, dot(N, u_light)))) * (fragment.color * material.color) * new_light_color;
-        vec3 C_specular = coef_spec * pow(max(0.0f, dot(u_reflect, u_view)), coef_exp) * new_light_color;
-        vec3 phong_color = C_diffuse_ambiant + C_specular;
-
-        end_color += current_color;
-        */
-
         // Phong coefficient (diffuse, specular)
         // *************************************** //
 
