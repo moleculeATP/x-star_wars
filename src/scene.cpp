@@ -239,6 +239,11 @@ void scene_structure::display_frame()
 	for(int i = 0; i < nb_of_ia_combat; i++){
 		victims[i].idle_frame();
 		chads[i].idle_frame();
+
+		vec3 center = xwing_ship.hierarchy["Vaisseau base"].transform_local.translation;
+
+		AI_ship_check_bounds(victims[i], center);
+		AI_ship_check_bounds(chads[i], center);
 	}
 	if (show_asteroids) asteroid_set.idle_frame(dt, xwing_ship.hierarchy["Vaisseau base"].drawable.model.translation);
 	idle_frame();
@@ -250,20 +255,6 @@ void scene_structure::display_frame()
 	xwing_aiship.idle_frame();
 	xwing_aiship.draw(environment);
 	*/
-
-	vec3 center = xwing_ship.hierarchy["Vaisseau base"].transform_local.translation;
-
-	for(int i = 0; i < nb_of_ia_combat; i++){
-		victims[i].idle_frame();
-		chads[i].idle_frame();
-		victims[i].draw(environment);
-		chads[i].draw(environment);
-
-		vec3 center = xwing_ship.hierarchy["Vaisseau base"].transform_local.translation;
-
-		AI_ship_check_bounds(victims[i], center);
-		AI_ship_check_bounds(chads[i], center);
-	}
 		
 
 	if (show_asteroids) asteroid_set.idle_frame(dt, xwing_ship.hierarchy["Vaisseau base"].drawable.model.translation);
@@ -284,11 +275,12 @@ void scene_structure::display_frame()
 	draw(sphere_light, environment);
 	xwing_ship.draw(environment);
 	xwing_ship.draw_lasers(environment);
-	passivship.draw(environment);
+
 	for(int i = 0; i < nb_of_ia_combat; i++){
 		victims[i].draw(environment);
 		chads[i].draw(environment);
 	}
+
 	if (show_asteroids) asteroid_set.draw(environment, gui.display_wireframe);
 	if (gui.display_frame) draw(global_frame, environment);
 	if (gui.display_ship_arrow) {
