@@ -69,6 +69,7 @@ struct ship {
     void idle_frame();
 
     void destruction_trigger(vec3 impact_pos, vec3 normal_destruction);
+    void respawn(vec3 position, rotation_transform rotation);
 
 protected:
     bool is_cursor_trapped; // true = cursor captured (/infinite motion), false = cursor free

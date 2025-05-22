@@ -69,13 +69,13 @@ void ship::draw(environment_generic_structure const& environment){
     else {
         cgp::draw(hierarchy, environment);
         // Lasers
-        // for (int i = 0; i < lasers_pos.size(); i++) {
-        //     if (lasers_active[i] == 1) {
-        //         laser.model.rotation = lasers_orientation[i];
-        //         laser.model.translation = lasers_pos[i];
-        //         cgp::draw(laser, environment);
-        //     }
-        // }
+        for (int i = 0; i < lasers_pos.size(); i++) {
+            if (lasers_active[i] == 1) {
+                laser.model.rotation = lasers_orientation[i];
+                laser.model.translation = lasers_pos[i];
+                cgp::draw(laser, environment);
+            }
+        }
     }
 }
 
@@ -95,6 +95,18 @@ void ship::destruction_trigger(vec3 impact_pos, vec3 normal_destruction){
         directions_destruction[k] = {rand_normal(normal_destruction.x, 1), rand_normal(normal_destruction.y, 1), rand_normal(normal_destruction.z, 1)};
         angular_velocity_destruction[k] = {rand_uniform(-5, 5), rand_uniform(-5, 5), rand_uniform(-5, 5)};
     }
+}
+
+void ship::respawn(vec3 position, rotation_transform rotation){
+    hierarchy["Vaisseau base"].transform_local.translation = position;
+    hierarchy["Vaisseau base"].transform_local.rotation = rotation;
+
+    destruction = false;
+    STOP = false;
+    laser_dt = 0;
+    last_laser = 0;
+    lasers_active.fill(0);
+
 }
 
 void ship::idle_frame()
@@ -170,6 +182,10 @@ void ship::idle_frame()
 		    vec3 axis = normalize(angular_velocity_destruction[k]);
             rotation_transform rT = rotation_transform::from_axis_angle(axis, angle);
 		    debris[k].model.rotation *= rT;
+
+            if(inputs -> keyboard.is_pressed(GLFW_KEY_K)){
+                respawn(vec3{0, 0, 0}, rotation_transform::from_axis_angle({0, 1, 0}, 0));
+            }
         }
     }
 }

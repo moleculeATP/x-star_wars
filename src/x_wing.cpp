@@ -66,12 +66,7 @@ namespace cgp {
             debris[i].initialize_data_on_gpu(mesh_primitive_sphere(0.02, {0, 0, 0}));
         }
         */
-    }
-
-    void x_wing::respawn() {
-        x_wing::initialize(*inputs, *window, *shader, *laser_shader);
-    }
-    
+    }    
 
     void x_wing::idle_frame() {
         float const magnitude = inputs->time_interval;
@@ -119,10 +114,6 @@ namespace cgp {
                 if (abs(lasers_pos[i][0]) > laser_bound || abs(lasers_pos[i][1]) > laser_bound || abs(lasers_pos[i][2]) > laser_bound)
                     lasers_active[i] = 0;
             }
-        }else{
-            if(inputs -> keyboard.is_pressed(GLFW_KEY_K)){
-                respawn();
-            }
         }
 
         
@@ -144,8 +135,9 @@ namespace cgp {
             }
         }
     }
-
 }
+
+
 
     
     
