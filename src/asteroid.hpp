@@ -17,6 +17,7 @@ namespace cgp {
 		vec3 center;
 		// vec3 color = vec3(88.0f/255.0f, 57.0f/255.0f, 39.0f/255.0f);
 		vec3 color = vec3(1, 1, 1);
+		float respawn_delay = 2.0f;
 
 		// Size N_mesh
 		numarray<mesh> meshes; 
@@ -29,8 +30,11 @@ namespace cgp {
 		numarray<vec3> positions;
 		numarray<rotation_transform> rotations;
 		numarray<int> mesh_ref; // asteroid id -> mesh model in meshes array
-		
-		void idle_frame(float dt, vec3 next_center);
+		numarray<float> colision_radius;
+		numarray<int> destroyed;
+		numarray<float> inactive_time;
+
+		void idle_frame(float dt, vec3 next_center, numarray<vec3> const& lasers_position);
 		void draw(environment_generic_structure const& environment, bool display_wireframe);
 		void apply_perlin();
 		void initialize(numarray<vec3> scales, int N, std::string const& texture_path, opengl_shader_structure const& shader);

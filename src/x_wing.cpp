@@ -105,7 +105,8 @@ namespace cgp {
                 if (lasers_active[i] == 0) continue;
                 vec3 velocity = lasers_velocity[i];
                 lasers_pos[i] += velocity * dt;
-                if (abs(lasers_pos[i][0]) > laser_bound || abs(lasers_pos[i][1]) > laser_bound || abs(lasers_pos[i][2]) > laser_bound)
+                vec3 center = hierarchy["Vaisseau base"].transform_local.translation;
+                if (norm(center - lasers_pos[i]) > laser_bound)
                     lasers_active[i] = 0;
             }
         }

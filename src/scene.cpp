@@ -245,7 +245,10 @@ void scene_structure::display_frame()
 		AI_ship_check_bounds(victims[i], center);
 		AI_ship_check_bounds(chads[i], center);
 	}
-	if (show_asteroids) asteroid_set.idle_frame(dt, xwing_ship.hierarchy["Vaisseau base"].drawable.model.translation);
+	numarray<vec3> lasers_pos;
+	for (int i = 0; i < xwing_ship.lasers_pos.size(); i++)
+		if (xwing_ship.lasers_active[i]) lasers_pos.push_back(xwing_ship.lasers_pos[i]);
+	if (show_asteroids) asteroid_set.idle_frame(dt, xwing_ship.hierarchy["Vaisseau base"].drawable.model.translation, lasers_pos);
 	idle_frame();
 
 	/**
