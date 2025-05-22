@@ -3,7 +3,7 @@
 using namespace cgp;
 
 bool show_asteroids = true;
-int nb_of_ia_combat = 3; // 8 AI ship fighting each other
+int nb_of_ia_combat = 2; // 8 AI ship fighting each other
 
 void scene_structure::initialize()
 {
@@ -146,7 +146,6 @@ void scene_structure::initialize()
 	
 	for(int i = 0; i < nb_of_ia_combat; i++){
 
-		float bound = 50; // spawn bound
 		if(i % 2 == 0){
 			x_wing_passiv_ship victim;
 			ai_ship chad;
@@ -252,7 +251,32 @@ void scene_structure::display_frame()
 	xwing_aiship.draw(environment);
 	*/
 
-	// Draw objects
+	vec3 center = xwing_ship.hierarchy["Vaisseau base"].transform_local.translation;
+
+	for(int i = 0; i < nb_of_ia_combat; i++){
+		victims[i].idle_frame();
+		chads[i].idle_frame();
+		victims[i].draw(environment);
+		chads[i].draw(environment);
+
+		vec3 center = xwing_ship.hierarchy["Vaisseau base"].transform_local.translation;
+
+		AI_ship_check_bounds(victims[i], center);
+		AI_ship_check_bounds(chads[i], center);
+	}
+		
+
+	if (show_asteroids) asteroid_set.idle_frame(dt, xwing_ship.hierarchy["Vaisseau base"].drawable.model.translation);
+
+	idle_frame();
+	
+	// conditional display of the global frame (set via the GUI)
+	if (gui.display_frame)
+		draw(global_frame, environment);
+
+	// the general syntax to display a mesh is:
+	//   draw(mesh_drawableName, environment);
+	// Note: scene is used to set the uniform parameters associated to the camera, light, etc. to the shader
 	draw(ground, environment);
 	draw(cube, environment);	
 	draw(sphere, environment);
@@ -280,6 +304,26 @@ void scene_structure::display_frame()
 		draw_wireframe(camel, environment);
 	}
 
+	environment.background_color = gui.brume_color;
+
+	if (gui.display_ship_arrow) {
+		draw(xwing_ship.arrow_up, environment);
+		draw(xwing_ship.arrow_velocity, environment);
+		draw(xwing_ship.arrow_left, environment);
+	}
+
+}
+
+void scene_structure::AI_ship_check_bounds(ship& ship, vec3 center)
+{
+	vec3 ship_position = ship.hierarchy["Vaisseau base"].transform_local.translation;
+
+	if(norm(ship_position - center) > bound){
+		vec3 pos = center - xwing_ship.velocity * 0.5 * bound;
+		// apply a normal (gaussian) noise to pos
+		pos += vec3(rand_normal(0.0f, 3.f), rand_normal(0.0f, 3.f), rand_normal(0.0f, 3.f));
+		ship.hierarchy["Vaisseau base"].transform_local.translation = pos;
+	}
 }
 
 void scene_structure::display_gui()

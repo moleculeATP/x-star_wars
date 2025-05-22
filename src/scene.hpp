@@ -81,6 +81,7 @@ struct scene_structure : cgp::scene_inputs_generic {
 
 	std::vector<passiv_ship> victims;
 	std::vector<ai_ship> chads;
+	float bound = 30.0f;
 
 	skybox_drawable skybox;
 
@@ -98,6 +99,7 @@ struct scene_structure : cgp::scene_inputs_generic {
 	void display_frame(); // The frame display to be called within the animation loop
 	void display_gui();   // The display of the GUI, also called within the animation loop
 
+	void AI_ship_check_bounds(ship& ship, vec3 center);
 
 	void mouse_move_event();
 	void mouse_click_event();
