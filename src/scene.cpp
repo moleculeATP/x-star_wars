@@ -95,7 +95,7 @@ void scene_structure::initialize()
 	if (show_asteroids) {
 		int N_uv = 100;
 		asteroid_set.N_mesh = 10;
-		asteroid_set.N_asteroids = 10;
+		asteroid_set.N_asteroids = 30;
 		std::vector<vec3> scales = std::vector<vec3>(asteroid_set.N_mesh, {rand_uniform(0.5, 6.0), rand_uniform(0.5, 1.5), rand_uniform(0.5, 1.5)});
 		asteroid_set.initialize(scales, N_uv, project::path + "assets/asteroid1.jpg", shader_custom);
 		asteroid_set.apply_perlin();
@@ -235,7 +235,16 @@ void scene_structure::display_frame()
 	sphere_light.material.phong.specular = 0;
 
 	// Update scene objects
-	xwing_ship.idle_frame();
+	numarray<vec3> asteroids_pos;
+	numarray<float> asteroids_radius;
+	for (int i = 0; i < asteroid_set.positions.size(); i++) {
+		if (asteroid_set.destroyed[i] == 0) {
+			asteroids_pos.push_back(asteroid_set.positions[i]);
+			asteroids_radius.push_back(asteroid_set.colision_radius[i]);
+		}
+	}
+	xwing_ship.idle_frame(asteroids_pos, asteroids_radius);
+
 	for(int i = 0; i < nb_of_ia_combat; i++){
 		victims[i].idle_frame();
 		chads[i].idle_frame();
@@ -245,11 +254,11 @@ void scene_structure::display_frame()
 		AI_ship_check_bounds(victims[i], center);
 		AI_ship_check_bounds(chads[i], center);
 	}
+
 	numarray<vec3> lasers_pos;
 	for (int i = 0; i < xwing_ship.lasers_pos.size(); i++)
 		if (xwing_ship.lasers_active[i]) lasers_pos.push_back(xwing_ship.lasers_pos[i]);
 	if (show_asteroids) asteroid_set.idle_frame(dt, xwing_ship.hierarchy["Vaisseau base"].drawable.model.translation, lasers_pos);
-	idle_frame();
 
 	/**
 	passivship.idle_frame();
@@ -259,8 +268,6 @@ void scene_structure::display_frame()
 	xwing_aiship.draw(environment);
 	*/
 		
-
-	if (show_asteroids) asteroid_set.idle_frame(dt, xwing_ship.hierarchy["Vaisseau base"].drawable.model.translation);
 
 	idle_frame();
 	

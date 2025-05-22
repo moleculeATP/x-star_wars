@@ -68,9 +68,9 @@ namespace cgp {
         */
     }    
 
-    void x_wing::idle_frame() {
+    void x_wing::idle_frame(numarray<vec3> const& damaging_pos, numarray<float> const& damaging_radius) {
         float const magnitude = inputs->time_interval;
-        ship::idle_frame();
+        ship::idle_frame(damaging_pos, damaging_radius);
         if(!destruction){
             if (inputs -> keyboard.is_pressed(GLFW_KEY_SPACE)){
                 speed = std::min(speed * speed_increase, speed_max);

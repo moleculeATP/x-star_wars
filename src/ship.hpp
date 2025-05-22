@@ -36,6 +36,7 @@ struct ship {
 
     bool destruction=false;
     float derive_speed = 0.005f;
+    float colision_radius = 3.0f;
 
     // Lasers
     mesh_drawable laser;
@@ -66,7 +67,7 @@ struct ship {
 
     void draw(environment_generic_structure const& environment);
 
-    void idle_frame();
+    void idle_frame(numarray<vec3> const& damaging_pos, numarray<float> const& damaging_radius);
 
     void destruction_trigger(vec3 impact_pos, vec3 normal_destruction);
     void respawn(vec3 position, rotation_transform rotation);

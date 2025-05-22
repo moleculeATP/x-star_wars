@@ -97,7 +97,7 @@ void ship::respawn(vec3 position, rotation_transform rotation){
 
 }
 
-void ship::idle_frame()
+void ship::idle_frame(numarray<vec3> const& damaging_pos, numarray<float> const& damaging_radius)
 {
     // Update the ship's position and rotation based on its speed and velocity
     // Preconditions
@@ -109,6 +109,18 @@ void ship::idle_frame()
     if(!destruction){
         // flight mod
         vec3 angular_acc = {0, 0, 0};  // valeur temporaire locale
+
+        if (inputs->keyboard.is_pressed(GLFW_KEY_J)){
+            destruction_trigger(hierarchy["Vaisseau base"].transform_local.translation + 0.5 * velocity, -velocity);
+        }
+
+        // Check colisions
+        for (int i = 0; i < damaging_pos.size(); i++) {
+            float d = norm(damaging_pos[i] - hierarchy["Vaisseau base"].transform_local.translation);
+            if (colision_radius + damaging_radius[i] > d) {
+                destruction_trigger(hierarchy["Vaisseau base"].transform_local.translation + 0.5 * velocity, -velocity);
+            }
+        }
 
         if (inputs->keyboard.is_pressed(GLFW_KEY_Q)) // roll left
             angular_acc += -roll_speed * velocity; // * magnitude if needed
@@ -146,9 +158,7 @@ void ship::idle_frame()
 
         angular_velocity *= amorti_angulaire; 
 
-        if (inputs->keyboard.is_pressed(GLFW_KEY_J)){
-            destruction_trigger(hierarchy["Vaisseau base"].transform_local.translation + 0.5 * velocity, -velocity);
-        }
+        
 
         // body.model.rotation = rotation_transform::from_frame_transform({1,0,0}, {0,0,1}, velocity, up);
         hierarchy["Vaisseau base"].transform_local.translation = hierarchy["Vaisseau base"].transform_local.translation + velocity * speed;
