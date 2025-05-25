@@ -16,14 +16,27 @@ namespace cgp {
         }
     }
 
-    void ai_ship::idle_frame()
+    void ai_ship::idle_frame(numarray<vec3> const& damaging_pos)
 {
     assert_cgp_no_msg(inputs != nullptr);
     assert_cgp_no_msg(window != nullptr);
 
     float const dt = inputs->time_interval;
 
-    if (STOP || destruction) return;
+    if (destruction) {
+        destructed_idle_frame();
+        return;
+    }
+
+    // Check colisions
+    for (int i = 0; i < damaging_pos.size(); i++) {
+        float d = norm(damaging_pos[i] - hierarchy["Vaisseau base"].transform_local.translation);
+        if (colision_radius > d) {
+            destruction_trigger(hierarchy["Vaisseau base"].transform_local.translation + 0.5 * velocity, -velocity);
+        }
+    }
+
+    if (STOP) return;
 
     vec3 pos_ai = hierarchy["Vaisseau base"].transform_local.translation;
     vec3 pos_target = target->hierarchy["Vaisseau base"].transform_local.translation;

@@ -7,7 +7,7 @@ struct ai_ship : ship {
     std::vector<mesh_drawable> body;
 
     void initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader, opengl_shader_structure& laser_shader);
-    void idle_frame();
+    void idle_frame(numarray<vec3> const& damaging_pos);
 
     void set_target(ship* target) { this->target = target; }
     

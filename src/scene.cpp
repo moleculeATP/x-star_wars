@@ -55,6 +55,7 @@ void scene_structure::initialize()
 	cube.model.translation = { 1,3,0 }; 
 
 	// Ground
+	/**
 	int N = 10;
 	float L_ground = 10.0f;
 	float z_ground = -0.51f;
@@ -73,6 +74,7 @@ void scene_structure::initialize()
 	ground.initialize_data_on_gpu(ground_mesh);
 	ground.material.color = { 0.6, 0.6, 0.6 };
 	ground.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/ground.png", GL_REPEAT, GL_REPEAT);
+	*/
 
 	// A Sphere
 	mesh sphere_mesh = mesh_primitive_sphere();
@@ -108,7 +110,7 @@ void scene_structure::initialize()
 	camel.shader = shader_mesh;
 	cube.shader = shader_mesh;
 	sphere.shader = shader_mesh;
-	ground.shader = shader_custom;
+	//ground.shader = shader_custom;
 
 	auto struct_body = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__body.obj");
 	auto struct_wing = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__wing.obj");
@@ -243,11 +245,15 @@ void scene_structure::display_frame()
 			asteroids_radius.push_back(asteroid_set.colision_radius[i]);
 		}
 	}
+
+	numarray<vec3> lasers_pos;
+	for (int i = 0; i < xwing_ship.lasers_pos.size(); i++)
+		if (xwing_ship.lasers_active[i]) lasers_pos.push_back(xwing_ship.lasers_pos[i]);
 	xwing_ship.idle_frame(asteroids_pos, asteroids_radius);
 
 	for(int i = 0; i < nb_of_ia_combat; i++){
-		victims[i].idle_frame();
-		chads[i].idle_frame();
+		victims[i].idle_frame(lasers_pos);
+		chads[i].idle_frame(lasers_pos);
 
 		vec3 center = xwing_ship.hierarchy["Vaisseau base"].transform_local.translation;
 
@@ -255,9 +261,6 @@ void scene_structure::display_frame()
 		AI_ship_check_bounds(chads[i], center);
 	}
 
-	numarray<vec3> lasers_pos;
-	for (int i = 0; i < xwing_ship.lasers_pos.size(); i++)
-		if (xwing_ship.lasers_active[i]) lasers_pos.push_back(xwing_ship.lasers_pos[i]);
 	if (show_asteroids) asteroid_set.idle_frame(dt, xwing_ship.hierarchy["Vaisseau base"].drawable.model.translation, lasers_pos);
 
 	/**
@@ -278,7 +281,7 @@ void scene_structure::display_frame()
 	// the general syntax to display a mesh is:
 	//   draw(mesh_drawableName, environment);
 	// Note: scene is used to set the uniform parameters associated to the camera, light, etc. to the shader
-	draw(ground, environment);
+	//draw(ground, environment);
 	draw(cube, environment);	
 	draw(sphere, environment);
 	draw(camel, environment);
@@ -300,7 +303,7 @@ void scene_structure::display_frame()
 	}
 
 	if (gui.display_wireframe) {
-		draw_wireframe(ground, environment);
+		//draw_wireframe(ground, environment);
 		draw_wireframe(sphere, environment);
 		draw_wireframe(cube, environment);
 		draw_wireframe(camel, environment);

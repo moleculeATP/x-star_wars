@@ -168,22 +168,25 @@ void ship::idle_frame(numarray<vec3> const& damaging_pos, numarray<float> const&
         arrow_left.model.translation = hierarchy["Vaisseau base"].transform_local.translation;
         arrow_velocity.model.translation = hierarchy["Vaisseau base"].transform_local.translation;
 
-    }else{
-        // destruction mod
-        for(int k = 0; k < debris.size(); ++k){
+    }else
+        destructed_idle_frame();
+}
+
+
+void ship::destructed_idle_frame(){
+    for(int k = 0; k < debris.size(); ++k){
             
-            vec3 incd = debris[k].model.translation - impact_pos;
-            vec3 dir = normalize(normal_destruction);
-            debris[k].model.translation += derive_speed * directions_destruction[k];
+        vec3 incd = debris[k].model.translation - impact_pos;
+        vec3 dir = normalize(normal_destruction);
+        debris[k].model.translation += derive_speed * directions_destruction[k];
 
-            float angle = norm(angular_velocity_destruction[k]) * inputs->time_interval;
-		    vec3 axis = normalize(angular_velocity_destruction[k]);
-            rotation_transform rT = rotation_transform::from_axis_angle(axis, angle);
-		    debris[k].model.rotation *= rT;
+        float angle = norm(angular_velocity_destruction[k]) * inputs->time_interval;
+        vec3 axis = normalize(angular_velocity_destruction[k]);
+        rotation_transform rT = rotation_transform::from_axis_angle(axis, angle);
+        debris[k].model.rotation *= rT;
 
-            if(inputs -> keyboard.is_pressed(GLFW_KEY_K)){
-                respawn(vec3{0, 0, 0}, rotation_transform::from_frame_transform({1,0,0}, {0,0,1}, {1, 0, 0}, {0, 0, 1}));
-            }
+        if(inputs -> keyboard.is_pressed(GLFW_KEY_K)){
+            respawn(vec3{0, 0, 0}, rotation_transform::from_frame_transform({1,0,0}, {0,0,1}, {1, 0, 0}, {0, 0, 1}));
         }
     }
 }

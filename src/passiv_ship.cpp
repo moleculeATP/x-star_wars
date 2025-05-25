@@ -4,9 +4,23 @@
 
 namespace cgp{
 
-    void passiv_ship::idle_frame(){
+    void passiv_ship::idle_frame(numarray<vec3> const& damaging_pos){
         assert_cgp_no_msg(inputs != nullptr);
         assert_cgp_no_msg(window != nullptr);
+
+
+        if (destruction) {
+            destructed_idle_frame();
+            return;
+        }
+
+        // Check colisions
+        for (int i = 0; i < damaging_pos.size(); i++) {
+            float d = norm(damaging_pos[i] - hierarchy["Vaisseau base"].transform_local.translation);
+            if (colision_radius > d) {
+                destruction_trigger(hierarchy["Vaisseau base"].transform_local.translation + 0.5 * velocity, -velocity);
+            }
+        }
 
         
         if(time_remaining > 0.0f){
