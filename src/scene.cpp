@@ -301,6 +301,7 @@ void scene_structure::display_frame()
 	for(int i = 0; i < nb_of_ia_combat; i++){
 		victims[i].draw(environment);
 		chads[i].draw(environment);
+		chads[i].draw_lasers(environment);
 	}
 
 	if (show_asteroids) asteroid_set.draw(environment, gui.display_wireframe);
