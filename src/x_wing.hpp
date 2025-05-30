@@ -17,7 +17,7 @@ struct x_wing : ship {
 
     void initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader, opengl_shader_structure& laser_shader);
     void idle_frame(numarray<vec3> const& damaging_pos, numarray<float> const& damaging_radius);
-    void draw_lasers(environment_generic_structure const& environment);
+    void laser_idle_frame();
 };
 
 }

@@ -9,6 +9,7 @@ struct ship {
 
     hierarchy_mesh_drawable hierarchy;
     std::vector<mesh_drawable> debris;
+    std::vector<mesh> debris_mesh; // used to center the debris around their barycenter
 
     vec3 velocity={1,0,0 };
     vec3 up={0,0,1 };
@@ -36,16 +37,16 @@ struct ship {
 
     bool destruction=false;
     float derive_speed = 0.005f;
-    float colision_radius = 1.0f;
+    float colision_radius = .5f;
 
     // Lasers
     mesh_drawable laser;
     int N_lasers = 19;
     int last_laser = 0;
     vec3 lasers_color = {1.0f, 0.1f, 0.88f};
-    float laser_bound = 100.0f;
+    float laser_bound = 80.0f;
     float lasers_speed = 50.0f;
-    float laser_delay = 0.008f;
+    float laser_delay = 0.03f;
     float laser_dt = 0.0f;
     float d_light_max = 10.0f;
     numarray<vec3> lasers_velocity;
@@ -66,6 +67,7 @@ struct ship {
     void initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader, opengl_shader_structure& laser_shader);
 
     void draw(environment_generic_structure const& environment);
+    void draw_lasers(environment_generic_structure const& environment);
 
     void idle_frame(numarray<vec3> const& damaging_pos, numarray<float> const& damaging_radius);
 	void destructed_idle_frame();

@@ -5,13 +5,30 @@ namespace cgp {
     void ai_ship::initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader, opengl_shader_structure& laser_shader){
         ship::initialize(inputs, window, shader, laser_shader);
         float scaling = 0.05f;
-        debris.resize(body.size());
+        debris.resize(debris_mesh.size());
         
         for (int k = 0; k < body.size(); ++k){
             body[k].model.scaling = scaling;
             std::string name = "Body " + str(k);
             hierarchy.add(body[k], name, "Vaisseau base");
             debris[k] = body[k];
+
+            
+            numarray<vec3> pos = debris_mesh[k].position;
+            int n = 0;
+            vec3 barycenter = {0, 0, 0};
+            for(int j = 0; j < pos.size(); ++j){
+                barycenter += pos[j];
+                n++;
+            }
+            
+            //debris_mesh[k] = debris_mesh[k].centered();
+            //debris[k] = mesh_drawable();
+            //debris[k].initialize_data_on_gpu(debris_mesh[k]);
+            //debris[k].model.scaling = scaling;
+            debris[k].model.translation = hierarchy["Vaisseau base"].transform_local.translation - barycenter*scaling;
+        
+        
             hierarchy[name].drawable.shader = shader;
         }
     }
@@ -65,8 +82,10 @@ namespace cgp {
     left = new_left;
     up = new_up;
 
-    hierarchy["Vaisseau base"].transform_local.rotation =
+    if (norm(cross(forward, new_up)) > 1e-3f) {
+        hierarchy["Vaisseau base"].transform_local.rotation =
         rotation_transform::from_frame_transform({1,0,0}, {0,0,1}, forward, new_up);
+    }
 
     arrow_velocity.model.translation = new_pos;
     arrow_velocity.model.rotation = hierarchy["Vaisseau base"].transform_local.rotation;
@@ -76,6 +95,8 @@ namespace cgp {
 
     arrow_left.model.translation = new_pos;
     arrow_left.model.rotation = hierarchy["Vaisseau base"].transform_local.rotation;
+
+
 }
 
 

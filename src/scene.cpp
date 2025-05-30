@@ -3,7 +3,7 @@
 using namespace cgp;
 
 bool show_asteroids = true;
-int nb_of_ia_combat = 2; // 8 AI ship fighting each other
+int nb_of_ia_combat = 1; // 2 AI ship fighting each other
 
 void scene_structure::initialize()
 {
@@ -115,8 +115,9 @@ void scene_structure::initialize()
 	auto struct_body = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__body.obj");
 	auto struct_wing = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__wing.obj");
 	auto struct_body_2 = mesh_load_file_obj_advanced(project::path + "assets/tie_model/", "tie.obj");
-	xwing_ship.body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body);
 	xwing_ship.wing = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_wing);
+	xwing_ship.body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body);
+
 	xwing_ship.initialize(inputs, window, shader_custom, laser_shader);
 
 	/** code test IA
@@ -143,6 +144,12 @@ void scene_structure::initialize()
 	std::vector<mesh_drawable> x_wing_body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body);
 	std::vector<mesh_drawable> x_wing_wing = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_wing);
 	std::vector<mesh_drawable> tie_body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body_2);
+	std::vector<mesh> mesh_tie;
+	mesh_tie.resize(tie_body.size());
+	for (int i = 0; i < tie_body.size(); i++) {
+		mesh_tie[i] = struct_body_2[i].mesh_element;
+	}
+
 	victims.resize(nb_of_ia_combat);
 	chads.resize(nb_of_ia_combat);
 	
@@ -155,6 +162,7 @@ void scene_structure::initialize()
 			victim.wing = x_wing_wing;
 			victim.initialize(inputs, window, shader_custom, laser_shader);
 			chad.body = tie_body;
+			chad.debris_mesh = mesh_tie;
 			chad.initialize(inputs, window, shader_custom, laser_shader);
 
 			victims[i] = victim;
@@ -166,6 +174,7 @@ void scene_structure::initialize()
 			chad.wing = x_wing_wing;
 			chad.initialize(inputs, window, shader_custom, laser_shader);
 			victim.body = tie_body;
+			victim.debris_mesh = mesh_tie;
 			victim.initialize(inputs, window, shader_custom, laser_shader);
 
 			victims[i] = victim;

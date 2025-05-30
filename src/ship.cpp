@@ -67,6 +67,18 @@ void ship::draw(environment_generic_structure const& environment){
     else cgp::draw(hierarchy, environment);
 }
 
+void ship::draw_lasers(environment_generic_structure const& environment) {
+    // Lasers
+    for (int i = 0; i < lasers_pos.size(); i++) {
+        if (lasers_active[i] == 1) {
+            laser.model.rotation = lasers_orientation[i];
+            laser.model.translation = lasers_pos[i];
+            // laser.material.color = x_wing::lasers_color;
+            cgp::draw(laser, environment);
+        }
+    }
+}
+
 void ship::destruction_trigger(vec3 impact_pos, vec3 normal_destruction){
     destruction = true;
     STOP = true;

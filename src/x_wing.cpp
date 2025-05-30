@@ -85,44 +85,36 @@ namespace cgp {
             hierarchy["Top left wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, wing_angle);
             hierarchy["Bottom left wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, -wing_angle);
             hierarchy["Bottom right wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, wing_angle);
-            
-            // Lasers
-            float dt = magnitude;
-            if (inputs->keyboard.is_pressed(GLFW_KEY_P) && laser_dt >= laser_delay) {
-                laser_dt = 0;
-                if (last_laser == N_lasers - 1) 
-                    last_laser = 0;
-                else last_laser += 1;
-
-                lasers_pos[last_laser] = hierarchy[canons_name[last_laser % 4]].drawable.hierarchy_transform_model.translation;
-                lasers_velocity[last_laser] = lasers_speed * normalize(velocity);
-                lasers_orientation[last_laser] = hierarchy["Vaisseau base"].transform_local.rotation * rotation_transform::from_axis_angle({0,1,0}, Pi/2.0f);
-                lasers_active[last_laser] = 1;
-                
-            } else laser_dt += dt;
-
-            for (int i = 0; i < N_lasers; i++) {
-                if (lasers_active[i] == 0) continue;
-                vec3 velocity = lasers_velocity[i];
-                lasers_pos[i] += velocity * dt;
-                vec3 center = hierarchy["Vaisseau base"].transform_local.translation;
-                if (norm(center - lasers_pos[i]) > laser_bound)
-                    lasers_active[i] = 0;
-            }
         }
+
+        laser_idle_frame();
 
         
     }
 
-    void x_wing::draw_lasers(environment_generic_structure const& environment) {
+    void x_wing::laser_idle_frame() {
         // Lasers
-        for (int i = 0; i < lasers_pos.size(); i++) {
-            if (lasers_active[i] == 1) {
-                laser.model.rotation = lasers_orientation[i];
-                laser.model.translation = lasers_pos[i];
-                // laser.material.color = x_wing::lasers_color;
-                cgp::draw(laser, environment);
-            }
+        float dt = inputs->time_interval;
+        if (inputs->keyboard.is_pressed(GLFW_KEY_P) && laser_dt >= laser_delay) {
+            laser_dt = 0;
+            if (last_laser == N_lasers - 1) 
+                last_laser = 0;
+            else last_laser += 1;
+
+            lasers_pos[last_laser] = hierarchy[canons_name[last_laser % 4]].drawable.hierarchy_transform_model.translation;
+            lasers_velocity[last_laser] = lasers_speed * normalize(velocity);
+            lasers_orientation[last_laser] = hierarchy["Vaisseau base"].transform_local.rotation * rotation_transform::from_axis_angle({0,1,0}, Pi/2.0f);
+            lasers_active[last_laser] = 1;
+            
+        } else laser_dt += dt;
+
+        for (int i = 0; i < N_lasers; i++) {
+            if (lasers_active[i] == 0) continue;
+            vec3 velocity = lasers_velocity[i];
+            lasers_pos[i] += velocity * dt;
+            vec3 center = hierarchy["Vaisseau base"].transform_local.translation;
+            if (norm(center - lasers_pos[i]) > laser_bound)
+                lasers_active[i] = 0;
         }
     }
 }
