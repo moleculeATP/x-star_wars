@@ -34,20 +34,20 @@ uniform material_structure material;
 uniform sampler2D image_texture;
 
 // Phong
-uniform float ambiant;
-uniform float diffus;
-uniform float coef_spec;
-uniform float coef_exp;
+uniform float ambiant_reactor;
+uniform float diffus_reactor;
+uniform float coef_spec_reactor;
+uniform float coef_exp_reactor;
 
 // View matrix
 uniform mat4 view;
 
 // Light sources
 uniform int N_lights_reactor; // Number of lights
-uniform vec3 light_colors_reactor;
+uniform vec3 light_color_reactor;
 uniform vec3 light_positions_reactor[4];
-uniform int active_lights_reactor[4];
 uniform float d_light_max_reactor;
+uniform float intensities[4];
 
 void main()
 {
@@ -59,15 +59,8 @@ void main()
 	// Renormalize normal
 	vec3 N = normalize(fragment.normal);
 
-	// Inverse the normal if it is viewed from its back (two-sided surface)
-	//  (note: gl_FrontFacing doesn't work on Mac)
-	if (material.texture_settings.two_sided && gl_FrontFacing == false) {
-		N = -N;
-	}
-
     vec3 end_color = vec3(0, 0, 0);
     for (int i = 0; i < N_lights_reactor; i++) {
-        if (active_lights_reactor[i] == 0) continue;
 
         // Light decrease with distance
         float light_intensity = 1.0f;
@@ -77,7 +70,6 @@ void main()
             float decrease_scale = min(d_light / d_lmax, 1.0f);
             light_intensity = (1.0f - decrease_scale);
         }
-        light_intensity = 1;
 
         // Phong coefficient (diffuse, specular)
         // *************************************** //
@@ -88,31 +80,25 @@ void main()
         // Diffuse coefficient
         float diffuse_component = max(dot(N,L),0.0);
 
-        // Texture
-        // *************************************** //
-
-        // Current uv coordinates
-        vec2 uv_image = vec2(fragment.uv.x, fragment.uv.y);
-        if(material.texture_settings.texture_inverse_v) {
-            uv_image.y = 1.0-uv_image.y;
-        }
-
-        // Get the current texture color
-        vec4 color_image_texture = texture(image_texture, uv_image);
-        if(material.texture_settings.use_texture == false) {
-            color_image_texture=vec4(1.0,1.0,1.0,1.0);
+        // Specular coefficient
+        float specular_component = 0.0;
+        if(diffuse_component > 0.0){
+            vec3 R = reflect(-L,N); // reflection of light vector relative to the normal.
+            vec3 V = normalize(camera_position-fragment.position);
+            specular_component = pow( max(dot(R,V),0.0), coef_exp_reactor );
         }
         
         // Compute Shading
         // *************************************** //
 
         // Compute the base color of the object based on: vertex color, uniform color, texture and light color
-        vec3 color_object = fragment.color * material.color * color_image_texture.rgb * light_colors_reactor;
+        vec3 color_object = material.color;
 
         // Compute the final shaded color using Phong model
-        float Ka = ambiant;
-        float Kd = diffus;
-        vec3 color_shading = (Ka + Kd * diffuse_component) * color_object;
+        float Ka = ambiant_reactor;
+        float Kd = diffus_reactor;
+        float Ks = coef_spec_reactor;
+        vec3 color_shading = Ka * color_object + (Ks * specular_component + Kd * diffuse_component) * light_color_reactor * intensities[i];
         
         // Output color, with the alpha component
         end_color += color_shading * light_intensity;

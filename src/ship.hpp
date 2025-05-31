@@ -1,5 +1,6 @@
 #pragma once
 #include "cgp/cgp.hpp"
+#include "environment.hpp"
 
 namespace cgp {
 struct ship {
@@ -61,6 +62,7 @@ struct ship {
 
     opengl_shader_structure* shader;
     opengl_shader_structure* laser_shader;
+    environment_structure* environment;
 
     ship();
 

@@ -6,13 +6,18 @@ namespace cgp {
 struct x_wing : ship {
     std::vector<mesh_drawable> body;
     std::vector<mesh_drawable> wing; 
-    std::vector<mesh_drawable> reactor;
+    mesh_drawable reactor;
 
+    float scaling_factor = 0.04f;
     bool deployed = false;
     float wing_min_angle = 0.f;
     float wing_max_angle = 0.22f;
     float wing_angle = 0.f;
     float wing_speed = 0.3f;
+
+    std::vector<float> intensities = {0, 0, 0, 0};
+    float coef_reactor = 1;
+    float disp_reactor = .5;
 
     numarray<std::string> canons_name = {"Top right laser", "Bottom left laser", "Top left laser", "Bottom right laser"};
 

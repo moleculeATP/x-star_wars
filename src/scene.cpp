@@ -3,7 +3,8 @@
 using namespace cgp;
 
 bool show_asteroids = true;
-int nb_of_ia_combat = 1; // 2 AI ship fighting each other
+int nb_of_ia_combat = 0; // 2 AI ship fighting each other
+bool SKYBOX = true;
 
 void scene_structure::initialize()
 {
@@ -48,12 +49,13 @@ void scene_structure::initialize()
 	);
 
 	// ---------------- Skybox ----------------
-	image_structure image_skybox_template = image_load_file(project::path+"assets/skybox_05.png");
-	// Split the image into a grid of 4 x 3 sub-images
-	std::vector<image_structure> image_grid = image_split_grid(image_skybox_template, 4, 3);
-	skybox.initialize_data_on_gpu();
-	skybox.texture.initialize_cubemap_on_gpu(image_grid[10], image_grid[4], image_grid[9], image_grid[11], image_grid[1], image_grid[7]);
-
+	if(SKYBOX){
+		image_structure image_skybox_template = image_load_file(project::path+"assets/skybox_05.png");
+		// Split the image into a grid of 4 x 3 sub-images
+		std::vector<image_structure> image_grid = image_split_grid(image_skybox_template, 4, 3);
+		skybox.initialize_data_on_gpu();
+		skybox.texture.initialize_cubemap_on_gpu(image_grid[10], image_grid[4], image_grid[9], image_grid[11], image_grid[1], image_grid[7]);
+	}
 	// ---------------------------- Shapes ----------------------------
 	cube.initialize_data_on_gpu(mesh_primitive_cube(/*center*/{ 0,0,0 }, /*edge length*/ 1.0f));
 	cube.material.color = { 1,1,0 };  
@@ -117,15 +119,17 @@ void scene_structure::initialize()
 	sphere.shader = shader_mesh;
 	//ground.shader = shader_custom;
 
+	
 	auto struct_body = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__body.obj");
 	auto struct_wing = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__wing.obj");
-	auto struct_body_2 = mesh_load_file_obj_advanced(project::path + "assets/tie_model/", "tie.obj");
+	//auto struct_body_2 = mesh_load_file_obj_advanced(project::path + "assets/tie_model/", "tie.obj");
 	auto struct_reactor = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "reactor.obj");
 	xwing_ship.wing = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_wing);
 	xwing_ship.body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body);
-	xwing_ship.reactor = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_reactor);
-
+	xwing_ship.reactor.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/x_wing_model/reactor.obj"));
+	
 	xwing_ship.initialize(inputs, window, shader_custom, laser_shader, reactor_shader);
+	xwing_ship.environment = &environment;
 
 	/** code test IA
 	xwing_aiship.body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body);
@@ -147,7 +151,7 @@ void scene_structure::initialize()
 	passivship.initialize(inputs, window, shader_custom, laser_shader);
 	passivship.hierarchy["Vaisseau base"].transform_local.translation = {5, 0, 0};
 	*/
-
+	/**
 	std::vector<mesh_drawable> x_wing_body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body);
 	std::vector<mesh_drawable> x_wing_wing = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_wing);
 	std::vector<mesh_drawable> tie_body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body_2);
@@ -198,6 +202,7 @@ void scene_structure::initialize()
 		chads[i].hierarchy["Vaisseau base"].transform_local.translation = 
 			vec3(rand_uniform(-bound, bound)/2, rand_uniform(-bound, bound)/2, rand_uniform(-bound, bound)/2);
 	}
+			**/
 }
 
 void scene_structure::display_frame()
@@ -205,13 +210,13 @@ void scene_structure::display_frame()
 	// Update time
 	float dt = timer.update();
 
-	
-	// Skybox
-	//  Must be called before drawing the other shapes and without writing in the Depth Buffer
-	glDepthMask(GL_FALSE); // disable depth-buffer writing
-	draw(skybox, environment);
-	glDepthMask(GL_TRUE);  // re-activate depth-buffer write
-	
+	if(SKYBOX){
+		// Skybox
+		//  Must be called before drawing the other shapes and without writing in the Depth Buffer
+		glDepthMask(GL_FALSE); // disable depth-buffer writing
+		draw(skybox, environment);
+		glDepthMask(GL_TRUE);  // re-activate depth-buffer write
+	}
 	// Set additional uniform parameters to the shader
 	environment.uniform_generic.uniform_float["ambiant"] = gui.ambiant;
 	environment.uniform_generic.uniform_float["diffus"] = gui.diffus;
@@ -254,32 +259,6 @@ void scene_structure::display_frame()
 	sphere_light.material.phong.diffuse = 0;
 	sphere_light.material.phong.specular = 0;
 
-	float x_offset = -0.2;//-0.147f;
-	float y_offset = -0.072f;
-	float z_offset = 0.036f;
-	std::vector<vec3> reactor_light_pos = {
-		xwing_ship.hierarchy["Vaisseau base"].transform_local.translation + vec3{-0.2, -0.1, 0.036f},
-		xwing_ship.hierarchy["Top left wing"].transform_local.translation + vec3{x_offset, -y_offset, z_offset},
-		xwing_ship.hierarchy["Bottom right wing"].transform_local.translation + vec3{x_offset, y_offset, -z_offset},
-		xwing_ship.hierarchy["Bottom left wing"].transform_local.translation + vec3{x_offset, -y_offset, -z_offset}
-	};
-
-	std::cout << "Reactor light positions: " << reactor_light_pos[0] << ", " << reactor_light_pos[1] << ", " << reactor_light_pos[2] << ", " << reactor_light_pos[3] << std::endl;
-	environment.uniform_generic.uniform_vec3["light_positions_reactor[0]"] = reactor_light_pos[0];
-	environment.uniform_generic.uniform_int["active_lights_reactor[0]"] = 1;
-
-	environment.uniform_generic.uniform_vec3["light_positions_reactor[1]"] = reactor_light_pos[1];
-	environment.uniform_generic.uniform_int["active_lights_reactor[1]"] = 0;
-
-	environment.uniform_generic.uniform_vec3["light_positions_reactor[2]"] = reactor_light_pos[2];
-	environment.uniform_generic.uniform_int["active_lights_reactor[2]"] = 0;
-
-	environment.uniform_generic.uniform_vec3["light_positions_reactor[3]"] = reactor_light_pos[3];
-	environment.uniform_generic.uniform_int["active_lights_reactor[3]"] = 0;
-	environment.uniform_generic.uniform_vec3["light_color_reactor"] = {1, 0.5f, 0.5f};
-	environment.uniform_generic.uniform_float["d_light_max_reactor"] = 5;
-	environment.uniform_generic.uniform_int["N_lights_reactor"] = 4;
-
 	// Update scene objects
 	numarray<vec3> asteroids_pos;
 	numarray<float> asteroids_radius;
@@ -317,6 +296,16 @@ void scene_structure::display_frame()
 		
 
 	idle_frame();
+
+
+	/**
+	mesh_drawable tmp3;
+	
+	tmp3.initialize_data_on_gpu(mesh_primitive_sphere(.01f));
+	tmp3.model.translation = reactor_light_pos[3];
+	draw(tmp3, environment);
+
+	**/
 	
 	// conditional display of the global frame (set via the GUI)
 	if (gui.display_frame)

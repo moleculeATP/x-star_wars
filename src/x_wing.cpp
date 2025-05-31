@@ -58,25 +58,28 @@ namespace cgp {
             hierarchy.add(wing_, "Bottom right wing " + str(k), "Bottom right wing", {0, -0.042f, -0.006f});
             hierarchy["Bottom right wing " + str(k)].drawable.shader = shader;
         }
+        
+        mesh_drawable reactor_ = reactor;
+        reactor_.model.scaling = scaling;
+        hierarchy.add(reactor_, "Top right reactor", "Top right wing", {0, -0.042f, 0.008f});
+        hierarchy["Top right reactor"].drawable.shader = reactor_shader;
+        hierarchy["Top right reactor"].drawable.material.color = vec3(.2, .07, .0);
 
-        for (int k = 0; k < reactor.size(); ++k){
-            mesh_drawable reactor_ = reactor[k];
-            reactor_.model.scaling = scaling;
-            hierarchy.add(reactor_, "Top right reactor " + str(k), "Top right wing", {0, -0.042f, 0.008f});
-            hierarchy["Top right reactor " + str(k)].drawable.shader = reactor_shader;
+        reactor_.model.scaling_xyz = {1, -1, 1};
+        hierarchy.add(reactor_, "Top left reactor", "Top left wing", {0, 0.042f, 0.008f});
+        hierarchy["Top left reactor"].drawable.shader = reactor_shader;
+        hierarchy["Top left reactor"].drawable.material.color = vec3(.2, .07, .0);
 
-            reactor_.model.scaling_xyz = {1, -1, 1};
-            hierarchy.add(reactor_, "Top left reactor " + str(k), "Top left wing", {0, 0.042f, 0.008f});
-            hierarchy["Top left reactor " + str(k)].drawable.shader = reactor_shader;
+        reactor_.model.scaling_xyz = {1, -1, -1};
+        hierarchy.add(reactor_, "Bottom left reactor", "Bottom left wing", {0, 0.042f, -0.006f});
+        hierarchy["Bottom left reactor"].drawable.shader = reactor_shader;
+        hierarchy["Bottom left reactor"].drawable.material.color = vec3(.2, .07, .0);
 
-            reactor_.model.scaling_xyz = {1, -1, -1};
-            hierarchy.add(reactor_, "Bottom left reactor " + str(k), "Bottom left wing", {0, 0.042f, -0.006f});
-            hierarchy["Bottom left reactor " + str(k)].drawable.shader = reactor_shader;
-
-            reactor_.model.scaling_xyz = {1, 1, -1};
-            hierarchy.add(reactor_, "Bottom right reactor " + str(k), "Bottom right wing", {0, -0.042f, -0.006f});
-            hierarchy["Bottom right reactor " + str(k)].drawable.shader = reactor_shader;
-        }
+        reactor_.model.scaling_xyz = {1, 1, -1};
+        hierarchy.add(reactor_, "Bottom right reactor", "Bottom right wing", {0, -0.042f, -0.006f});
+        hierarchy["Bottom right reactor"].drawable.shader = reactor_shader;
+        hierarchy["Bottom right reactor"].drawable.material.color = vec3(.2, .07, .0);
+    
         //mesh_drawable tmp2 = mesh_drawable();
         //tmp2.initialize_data_on_gpu(mesh_primitive_sphere(0.02, {-0.147, -0.072, 0.036}));
         //hierarchy.add(tmp2, "Top right reactor sphere", "Top right wing");
@@ -107,6 +110,84 @@ namespace cgp {
             hierarchy["Bottom left wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, -wing_angle);
             hierarchy["Bottom right wing"].transform_local.rotation = rotation_transform::from_axis_angle({1, 0, 0}, wing_angle);
         }
+        float sup = 1.f;
+        if(inputs->keyboard.is_pressed(GLFW_KEY_SPACE)){
+            sup = 1.5;
+            for(int i=0; i < 4; i++){
+                intensities[i] = std::min(2.f, intensities[i] + 2*magnitude*coef_reactor);
+            }
+        }
+
+        else{
+            if (inputs->keyboard.is_pressed(GLFW_KEY_Q)){
+                intensities[0] = std::min(sup, intensities[0] + magnitude*coef_reactor);
+                intensities[3] = std::min(sup, intensities[3] + magnitude*coef_reactor);
+            }
+                
+            if (inputs->keyboard.is_pressed(GLFW_KEY_E)) {
+                intensities[2] = std::min(sup, intensities[2] + magnitude*coef_reactor);
+                intensities[1] = std::min(sup, intensities[1] + magnitude*coef_reactor);
+            }
+
+            if (inputs->keyboard.is_pressed(GLFW_KEY_W)){
+                intensities[2] = std::min(sup, intensities[2] + magnitude*coef_reactor);
+                intensities[3] = std::min(sup, intensities[3] + magnitude*coef_reactor);
+            } 
+            if (inputs->keyboard.is_pressed(GLFW_KEY_S)){
+                intensities[0] = std::min(sup, intensities[0] + magnitude*coef_reactor);
+                intensities[1] = std::min(sup, intensities[1] + magnitude*coef_reactor);
+            }
+
+            if (inputs->keyboard.is_pressed(GLFW_KEY_A)) {
+                intensities[0] = std::min(sup, intensities[0] + magnitude*coef_reactor);
+                intensities[2] = std::min(sup, intensities[2] + magnitude*coef_reactor);
+            }
+            if (inputs->keyboard.is_pressed(GLFW_KEY_D)){
+                intensities[1] = std::min(sup, intensities[1] + magnitude*coef_reactor);
+                intensities[3] = std::min(sup, intensities[3] + magnitude*coef_reactor);
+            }
+        }
+        
+
+        for(int i = 0; i < 4; i++){
+            intensities[i] = std::max(intensities[i] - disp_reactor*magnitude, 0.f);
+        }
+        std::cout << intensities[0] << std::endl;
+
+        // NE PAS DEPLACER 
+        // il faut executer cette section apres l actualisation des positions des vaisseaux
+        float x_offset = -0.158f;
+        float y_offset = -0.028;
+        float z_offset = 0.03f;
+
+        std::vector<vec3> reactor_light_pos = {
+            hierarchy["Top right reactor"].drawable.hierarchy_transform_model * (vec3(x_offset, y_offset, z_offset)),
+            hierarchy["Top left reactor"].drawable.hierarchy_transform_model * (vec3(x_offset, -y_offset, z_offset)),
+            hierarchy["Bottom right reactor"].drawable.hierarchy_transform_model * (vec3(x_offset, y_offset, -z_offset)),
+            hierarchy["Bottom left reactor"].drawable.hierarchy_transform_model * (vec3(x_offset, -y_offset, -z_offset))
+        };
+
+        environment->uniform_generic.uniform_vec3["light_positions_reactor[0]"] = reactor_light_pos[0];
+        environment->uniform_generic.uniform_float["intensities[0]"] = intensities[0];
+
+        environment->uniform_generic.uniform_vec3["light_positions_reactor[1]"] = reactor_light_pos[1];
+        environment->uniform_generic.uniform_float["intensities[1]"] = intensities[1];
+
+        environment->uniform_generic.uniform_vec3["light_positions_reactor[2]"] = reactor_light_pos[2];
+        environment->uniform_generic.uniform_float["intensities[2]"] = intensities[2];
+
+        environment->uniform_generic.uniform_vec3["light_positions_reactor[3]"] = reactor_light_pos[3];
+        environment->uniform_generic.uniform_float["intensities[3]"] = intensities[3];
+
+        environment->uniform_generic.uniform_vec3["light_color_reactor"] = vec3(1, .8f, .2f);
+        environment->uniform_generic.uniform_float["d_light_max_reactor"] = .2;
+        environment->uniform_generic.uniform_int["N_lights_reactor"] = 4;
+
+
+        environment->uniform_generic.uniform_float["ambiant_reactor"] = 0.2f;
+        environment->uniform_generic.uniform_float["diffus_reactor"] = .7f;
+        environment->uniform_generic.uniform_float["coef_spec_reactor"] = .4f;
+        environment->uniform_generic.uniform_float["coef_exp_reactor"] = 64;
 
         laser_idle_frame();
 
