@@ -4,7 +4,7 @@
 
 namespace cgp {
 
-    void x_wing::initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader, opengl_shader_structure& laser_shader){
+    void x_wing::initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader, opengl_shader_structure& laser_shader, opengl_shader_structure& reactor_shader){
         ship::initialize(inputs, window, shader, laser_shader);
         float scaling = 0.04f;
         debris.resize(body.size() + 2 * wing.size());
@@ -51,14 +51,35 @@ namespace cgp {
 
             wing_.model.scaling_xyz = {1, -1, -1};
             debris[body.size() + wing.size() + k] = wing_;
-            hierarchy.add(wing_, "Bottom left wing " + str(k), "Bottom left wing", {0, 0.04f, -0.006f});
+            hierarchy.add(wing_, "Bottom left wing " + str(k), "Bottom left wing", {0, 0.042f, -0.006f});
             hierarchy["Bottom left wing " + str(k)].drawable.shader = shader;
 
             wing_.model.scaling_xyz = {1, 1, -1};
-            hierarchy.add(wing_, "Bottom right wing " + str(k), "Bottom right wing", {0, -0.04f, -0.006f});
+            hierarchy.add(wing_, "Bottom right wing " + str(k), "Bottom right wing", {0, -0.042f, -0.006f});
             hierarchy["Bottom right wing " + str(k)].drawable.shader = shader;
         }
-        
+
+        for (int k = 0; k < reactor.size(); ++k){
+            mesh_drawable reactor_ = reactor[k];
+            reactor_.model.scaling = scaling;
+            hierarchy.add(reactor_, "Top right reactor " + str(k), "Top right wing", {0, -0.042f, 0.008f});
+            hierarchy["Top right reactor " + str(k)].drawable.shader = reactor_shader;
+
+            reactor_.model.scaling_xyz = {1, -1, 1};
+            hierarchy.add(reactor_, "Top left reactor " + str(k), "Top left wing", {0, 0.042f, 0.008f});
+            hierarchy["Top left reactor " + str(k)].drawable.shader = reactor_shader;
+
+            reactor_.model.scaling_xyz = {1, -1, -1};
+            hierarchy.add(reactor_, "Bottom left reactor " + str(k), "Bottom left wing", {0, 0.042f, -0.006f});
+            hierarchy["Bottom left reactor " + str(k)].drawable.shader = reactor_shader;
+
+            reactor_.model.scaling_xyz = {1, 1, -1};
+            hierarchy.add(reactor_, "Bottom right reactor " + str(k), "Bottom right wing", {0, -0.042f, -0.006f});
+            hierarchy["Bottom right reactor " + str(k)].drawable.shader = reactor_shader;
+        }
+        //mesh_drawable tmp2 = mesh_drawable();
+        //tmp2.initialize_data_on_gpu(mesh_primitive_sphere(0.02, {-0.147, -0.072, 0.036}));
+        //hierarchy.add(tmp2, "Top right reactor sphere", "Top right wing");
 
         /**
         debris = std::vector<mesh_drawable> (10);

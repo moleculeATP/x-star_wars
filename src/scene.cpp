@@ -42,6 +42,11 @@ void scene_structure::initialize()
 		project::path + "shaders/shading_custom/laser.frag.glsl"
 	);
 
+	reactor_shader.load(
+		project::path + "shaders/shading_custom/shading_custom.vert.glsl",
+		project::path + "shaders/shading_custom/reactor.frag.glsl"
+	);
+
 	// ---------------- Skybox ----------------
 	image_structure image_skybox_template = image_load_file(project::path+"assets/skybox_05.png");
 	// Split the image into a grid of 4 x 3 sub-images
@@ -115,10 +120,12 @@ void scene_structure::initialize()
 	auto struct_body = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__body.obj");
 	auto struct_wing = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__wing.obj");
 	auto struct_body_2 = mesh_load_file_obj_advanced(project::path + "assets/tie_model/", "tie.obj");
+	auto struct_reactor = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "reactor.obj");
 	xwing_ship.wing = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_wing);
 	xwing_ship.body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body);
+	xwing_ship.reactor = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_reactor);
 
-	xwing_ship.initialize(inputs, window, shader_custom, laser_shader);
+	xwing_ship.initialize(inputs, window, shader_custom, laser_shader, reactor_shader);
 
 	/** code test IA
 	xwing_aiship.body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body);
@@ -198,12 +205,13 @@ void scene_structure::display_frame()
 	// Update time
 	float dt = timer.update();
 
+	
 	// Skybox
 	//  Must be called before drawing the other shapes and without writing in the Depth Buffer
 	glDepthMask(GL_FALSE); // disable depth-buffer writing
 	draw(skybox, environment);
 	glDepthMask(GL_TRUE);  // re-activate depth-buffer write
-
+	
 	// Set additional uniform parameters to the shader
 	environment.uniform_generic.uniform_float["ambiant"] = gui.ambiant;
 	environment.uniform_generic.uniform_float["diffus"] = gui.diffus;
@@ -222,6 +230,7 @@ void scene_structure::display_frame()
 	environment.uniform_generic.uniform_vec3["light_positions[0]"] = gui.light_position;
 	environment.uniform_generic.uniform_float["d_light_max[0]"] = -1.0f;
 	environment.uniform_generic.uniform_int["active_lights[0]"] = 1;
+
 	// Uniform variables for Lasers lights
 	environment.uniform_generic.uniform_vec3["color"] = xwing_ship.laser.material.color;
 	for (int i = 1; i < xwing_ship.N_lasers; i ++) {
@@ -244,6 +253,32 @@ void scene_structure::display_frame()
 	sphere_light.material.phong.ambient = 1;
 	sphere_light.material.phong.diffuse = 0;
 	sphere_light.material.phong.specular = 0;
+
+	float x_offset = -0.2;//-0.147f;
+	float y_offset = -0.072f;
+	float z_offset = 0.036f;
+	std::vector<vec3> reactor_light_pos = {
+		xwing_ship.hierarchy["Vaisseau base"].transform_local.translation + vec3{-0.2, -0.1, 0.036f},
+		xwing_ship.hierarchy["Top left wing"].transform_local.translation + vec3{x_offset, -y_offset, z_offset},
+		xwing_ship.hierarchy["Bottom right wing"].transform_local.translation + vec3{x_offset, y_offset, -z_offset},
+		xwing_ship.hierarchy["Bottom left wing"].transform_local.translation + vec3{x_offset, -y_offset, -z_offset}
+	};
+
+	std::cout << "Reactor light positions: " << reactor_light_pos[0] << ", " << reactor_light_pos[1] << ", " << reactor_light_pos[2] << ", " << reactor_light_pos[3] << std::endl;
+	environment.uniform_generic.uniform_vec3["light_positions_reactor[0]"] = reactor_light_pos[0];
+	environment.uniform_generic.uniform_int["active_lights_reactor[0]"] = 1;
+
+	environment.uniform_generic.uniform_vec3["light_positions_reactor[1]"] = reactor_light_pos[1];
+	environment.uniform_generic.uniform_int["active_lights_reactor[1]"] = 0;
+
+	environment.uniform_generic.uniform_vec3["light_positions_reactor[2]"] = reactor_light_pos[2];
+	environment.uniform_generic.uniform_int["active_lights_reactor[2]"] = 0;
+
+	environment.uniform_generic.uniform_vec3["light_positions_reactor[3]"] = reactor_light_pos[3];
+	environment.uniform_generic.uniform_int["active_lights_reactor[3]"] = 0;
+	environment.uniform_generic.uniform_vec3["light_color_reactor"] = {1, 0.5f, 0.5f};
+	environment.uniform_generic.uniform_float["d_light_max_reactor"] = 5;
+	environment.uniform_generic.uniform_int["N_lights_reactor"] = 4;
 
 	// Update scene objects
 	numarray<vec3> asteroids_pos;

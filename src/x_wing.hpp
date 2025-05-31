@@ -6,6 +6,7 @@ namespace cgp {
 struct x_wing : ship {
     std::vector<mesh_drawable> body;
     std::vector<mesh_drawable> wing; 
+    std::vector<mesh_drawable> reactor;
 
     bool deployed = false;
     float wing_min_angle = 0.f;
@@ -15,7 +16,7 @@ struct x_wing : ship {
 
     numarray<std::string> canons_name = {"Top right laser", "Bottom left laser", "Top left laser", "Bottom right laser"};
 
-    void initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader, opengl_shader_structure& laser_shader);
+    void initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader, opengl_shader_structure& laser_shader, opengl_shader_structure& reactor_shader);
     void idle_frame(numarray<vec3> const& damaging_pos, numarray<float> const& damaging_radius);
     void laser_idle_frame();
 };

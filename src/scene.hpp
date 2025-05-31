@@ -89,7 +89,7 @@ struct scene_structure : cgp::scene_inputs_generic {
 	opengl_shader_structure shader_mesh;
 	opengl_shader_structure shader_custom;
 	opengl_shader_structure laser_shader;
-
+	opengl_shader_structure reactor_shader;
 
 	// ****************************** //
 	// Functions

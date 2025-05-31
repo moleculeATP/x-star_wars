@@ -104,7 +104,7 @@ namespace cgp {
         // Lasers
         float dt = inputs->time_interval;
         float distance_tir_max = 100;
-        float distance_tir_min = 2;
+        float distance_tir_min = 5;
         laser_delay = 0.05f;
         
         float dist = norm(hierarchy["Vaisseau base"].drawable.hierarchy_transform_model.translation - target->hierarchy["Vaisseau base"].drawable.hierarchy_transform_model.translation);
