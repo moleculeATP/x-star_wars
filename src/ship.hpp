@@ -47,7 +47,7 @@ struct ship {
     vec3 lasers_color = {1.0f, 0.1f, 0.88f};
     float laser_bound = 80.0f;
     float lasers_speed = 50.0f;
-    float laser_delay = 0.03f;
+    float laser_delay = 0.1f;
     float laser_dt = 0.0f;
     float d_light_max = 10.0f;
     numarray<vec3> lasers_velocity;

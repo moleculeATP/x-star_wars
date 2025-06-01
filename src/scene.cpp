@@ -124,8 +124,10 @@ void scene_structure::initialize()
 	auto struct_wing = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__wing.obj");
 	//auto struct_body_2 = mesh_load_file_obj_advanced(project::path + "assets/tie_model/", "tie.obj");
 	auto struct_reactor = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "reactor.obj");
+	auto struct_gun = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__gun.obj");
 	xwing_ship.wing = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_wing);
 	xwing_ship.body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body);
+	xwing_ship.gun = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_gun);
 	xwing_ship.reactor.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/x_wing_model/reactor.obj"));
 	
 	xwing_ship.initialize(inputs, window, shader_custom, laser_shader, reactor_shader);

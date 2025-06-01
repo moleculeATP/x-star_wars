@@ -27,7 +27,7 @@ namespace cgp {
         hierarchy.add(tmp, "Bottom left wing", "Vaisseau base");
         hierarchy.add(tmp, "Bottom right wing", "Vaisseau base");
         
-        float offset_x = 1.2f;
+        float offset_x = .8f;
         float offset_y = 0.95f;
         float top_offset_z = -0.3f;
         float bottom_offset_z = -0.4f;
@@ -57,6 +57,25 @@ namespace cgp {
             wing_.model.scaling_xyz = {1, 1, -1};
             hierarchy.add(wing_, "Bottom right wing " + str(k), "Bottom right wing", {0, -0.042f, -0.006f});
             hierarchy["Bottom right wing " + str(k)].drawable.shader = shader;
+        }
+
+        for (int k = 0; k < gun.size(); ++k){
+            mesh_drawable gun_ = gun[k];
+            gun_.model.scaling = scaling;
+            hierarchy.add(gun_, "Top right gun", "Top right wing", {0, -0.042f, 0.008f});
+            hierarchy["Top right gun"].drawable.shader = shader;
+
+            gun_.model.scaling_xyz = {1, -1, 1};
+            hierarchy.add(gun_, "Top left gun", "Top left wing", {0, 0.042f, 0.008f});
+            hierarchy["Top left gun"].drawable.shader = shader;
+
+            gun_.model.scaling_xyz = {1, -1, -1};
+            hierarchy.add(gun_, "Bottom left gun", "Bottom left wing", {0, 0.042f, -0.006f});
+            hierarchy["Bottom left gun"].drawable.shader = shader;
+
+            gun_.model.scaling_xyz = {1, 1, -1};
+            hierarchy.add(gun_, "Bottom right gun", "Bottom right wing", {0, -0.042f, -0.006f});
+            hierarchy["Bottom right gun"].drawable.shader = shader;
         }
         
         mesh_drawable reactor_ = reactor;
@@ -118,6 +137,7 @@ namespace cgp {
             }
         }
 
+        // coloration reacteurs
         else{
             if (inputs->keyboard.is_pressed(GLFW_KEY_Q)){
                 intensities[0] = std::min(sup, intensities[0] + magnitude*coef_reactor);
@@ -147,12 +167,25 @@ namespace cgp {
                 intensities[3] = std::min(sup, intensities[3] + magnitude*coef_reactor);
             }
         }
+
+        // animation canon
+        float k = 15; float s = 0.7;
+        for (int i = 0; i < 4; i++) {
+            if (guns_trigered[i]) {
+                guns_anim_time[i] += magnitude;
+                float offset = sin(pow((k * guns_anim_time[i]), s))* 0.05f;
+                hierarchy[guns_name[i]].transform_local.translation.x = -offset;
+                if(offset < 0){
+                    hierarchy[guns_name[i]].transform_local.translation.x = 0;
+                    guns_trigered[i] = false;
+                }
+            }
+        }
         
 
         for(int i = 0; i < 4; i++){
             intensities[i] = std::max(intensities[i] - disp_reactor*magnitude, 0.f);
         }
-        std::cout << intensities[0] << std::endl;
 
         // NE PAS DEPLACER 
         // il faut executer cette section apres l actualisation des positions des vaisseaux
@@ -207,6 +240,9 @@ namespace cgp {
             lasers_velocity[last_laser] = lasers_speed * normalize(velocity);
             lasers_orientation[last_laser] = hierarchy["Vaisseau base"].transform_local.rotation * rotation_transform::from_axis_angle({0,1,0}, Pi/2.0f);
             lasers_active[last_laser] = 1;
+
+            guns_trigered[last_laser % 4] = true;
+            guns_anim_time[last_laser % 4] = 0.0f;
             
         } else laser_dt += dt;
 
