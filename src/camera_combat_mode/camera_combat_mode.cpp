@@ -38,6 +38,11 @@ void camera_combat_mode::idle_frame(mat4& camera_matrix_view, ship& ship_to_cont
 	vec3 pos;
 
 	if(ship_to_control.is_turning){
+		float timer_turning = ship_to_control.timer_turning;
+		if(timer_turning >= ship_to_control.steps_times[2]){
+			
+		}
+
 		mat3 O = transpose(mat3(camera_matrix_view));    
 		vec4 tmp = (camera_matrix_view*vec4(0.0, 0.0, 0.0, 1.0));
 		vec3 last_col = vec3(tmp[0], tmp[1], tmp[2]); // get the last column
@@ -45,7 +50,7 @@ void camera_combat_mode::idle_frame(mat4& camera_matrix_view, ship& ship_to_cont
 
 		look_at(camera_position, // Camera position
 			ship_to_control.hierarchy["Vaisseau base"].transform_local.translation, // Target position
-			ship_to_control.up); // could crash
+			ship_to_control.up - ship_to_control.velocity); // could crash
 		return;
 	}
 

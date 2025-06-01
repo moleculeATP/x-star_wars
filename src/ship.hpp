@@ -62,8 +62,8 @@ struct ship {
     std::vector<vec3> positions_turning;
     std::vector<vec3> derivative_turning;
     float timer_turning = 0.0f;
-    float ampl_turn = 2;
-    std::vector<float> steps_times = {0.0f, 1.f, 2.f, 3.f};
+    float ampl_turn = 1;
+    std::vector<float> steps_times = {0.0f, .8f, 1.6f, 2.6f};
 
     // Pointers to the global state of the inputs (keyboard, mouse, etc)
     input_devices* inputs;

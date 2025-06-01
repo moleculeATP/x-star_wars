@@ -183,8 +183,8 @@ void ship::idle_frame(numarray<vec3> const& damaging_pos, numarray<float> const&
             derivative_turning.resize(4);
 
             positions_turning[0] = hierarchy["Vaisseau base"].transform_local.translation;
-            positions_turning[1] = hierarchy["Vaisseau base"].transform_local.translation + ampl_turn * velocity + ampl_turn * up;
-            positions_turning[2] = hierarchy["Vaisseau base"].transform_local.translation + 2* ampl_turn * up;
+            positions_turning[1] = hierarchy["Vaisseau base"].transform_local.translation + 1.5 * ampl_turn * velocity + ampl_turn * up;
+            positions_turning[2] = hierarchy["Vaisseau base"].transform_local.translation + 2* ampl_turn * up + .5 * ampl_turn * velocity;
             positions_turning[3] = hierarchy["Vaisseau base"].transform_local.translation + 2 * ampl_turn * up + ampl_turn * -velocity;
 
             rotation_turning[0] = hierarchy["Vaisseau base"].transform_local.rotation;
