@@ -96,7 +96,7 @@ void scene_structure::initialize()
 	camel.model.scaling = 0.1f;
 	camel.model.translation = { -1,1,0.5f };
 
-	// Sphere used to display the position of a light
+	// Sphere used to display the po sition of a light
 	sphere_light.initialize_data_on_gpu(mesh_primitive_sphere(0.2f));
 	laser_shot.initialize_data_on_gpu(mesh_primitive_ellipsoid());
 
@@ -104,7 +104,7 @@ void scene_structure::initialize()
 	if (show_asteroids) {
 		int N_uv = 100;
 		asteroid_set.N_mesh = 10;
-		asteroid_set.N_asteroids = 30;
+		asteroid_set.N_asteroids = 150;
 		std::vector<vec3> scales = std::vector<vec3>(asteroid_set.N_mesh, {rand_uniform(0.5, 6.0), rand_uniform(0.5, 1.5), rand_uniform(0.5, 1.5)});
 		asteroid_set.initialize(scales, N_uv, project::path + "assets/asteroid1.jpg", shader_custom);
 		asteroid_set.apply_perlin();
@@ -225,16 +225,16 @@ void scene_structure::display_frame()
 	environment.uniform_generic.uniform_float["coef_spec"] = gui.coef_spec;
 	environment.uniform_generic.uniform_float["coef_exp"] = gui.exp_spec;
 	environment.uniform_generic.uniform_vec3["light_color"] = gui.light_color;
-	environment.uniform_generic.uniform_vec3["brume_color"] = gui.brume_color;
-	environment.uniform_generic.uniform_vec3["light_position"] = gui.light_position;
+	//environment.uniform_generic.uniform_vec3["brume_color"] = gui.brume_color;
+	//environment.uniform_generic.uniform_vec3["light_position"] = gui.light_position;
 	environment.uniform_generic.uniform_float["distance_xwing"] = 1.0f;
 	environment.uniform_generic.uniform_vec3["camera_pos"] = camera_control.camera_model.position();
 	environment.uniform_generic.uniform_mat4["view"] = camera_control.camera_model.matrix_view();
 	// environment.background_color = gui.brume_color;
 
 	environment.uniform_generic.uniform_int["N_lights"] = 20;
+	environment.uniform_generic.uniform_vec3["light_positions[0]"] = sphere_light.model.translation;
 	environment.uniform_generic.uniform_vec3["light_colors[0]"] = gui.light_color;
-	environment.uniform_generic.uniform_vec3["light_positions[0]"] = gui.light_position;
 	environment.uniform_generic.uniform_float["d_light_max[0]"] = -1.0f;
 	environment.uniform_generic.uniform_int["active_lights[0]"] = 1;
 
@@ -255,7 +255,7 @@ void scene_structure::display_frame()
 		}
 	}
 
-	sphere_light.model.translation = gui.light_position;
+	// sphere_light.model.translation = gui.light_position;
 	sphere_light.material.color = gui.light_color * 0.8f;
 	sphere_light.material.phong.ambient = 1;
 	sphere_light.material.phong.diffuse = 0;
@@ -309,14 +309,11 @@ void scene_structure::display_frame()
 
 	**/
 	
-	// conditional display of the global frame (set via the GUI)
 	if (gui.display_frame)
 		draw(global_frame, environment);
 
-	// the general syntax to display a mesh is:
-	//   draw(mesh_drawableName, environment);
-	// Note: scene is used to set the uniform parameters associated to the camera, light, etc. to the shader
-	//draw(ground, environment);
+	// if (gui.display_ground)
+	// 	draw(ground, environment);
 	draw(cube, environment);	
 	draw(sphere, environment);
 	draw(camel, environment);
@@ -339,13 +336,13 @@ void scene_structure::display_frame()
 	}
 
 	if (gui.display_wireframe) {
-		//draw_wireframe(ground, environment);
+		// if (gui.display_ground)
+		// 	draw_wireframe(ground, environment);
 		draw_wireframe(sphere, environment);
 		draw_wireframe(cube, environment);
 		draw_wireframe(camel, environment);
 	}
 
-	environment.background_color = gui.brume_color;
 
 	if (gui.display_ship_arrow) {
 		draw(xwing_ship.arrow_up, environment);
@@ -372,10 +369,9 @@ void scene_structure::display_gui()
 	ImGui::Checkbox("Frame", &gui.display_frame);
 	ImGui::Checkbox("ship_arrow", &gui.display_ship_arrow);
 	ImGui::Checkbox("Wireframe", &gui.display_wireframe);
+	// ImGui::Checkbox("Show ground", &gui.display_ground);
 
 	ImGui::ColorEdit3("Light color", &gui.light_color[0]);
-	ImGui::ColorEdit3("Brume", &gui.brume_color[0]);
-	ImGui::SliderFloat3("Light position", &gui.light_position[0], -3.0f, 3.0f);
 
 	ImGui::SliderFloat("Ambiant", &gui.ambiant, 0.0f, 1.0f);
 	ImGui::SliderFloat("Diffus", &gui.diffus, 0.0f, 1.0f);

@@ -25,10 +25,9 @@ struct gui_parameters {
 	bool display_frame = false;
 	bool display_wireframe = false;	
 	bool display_ship_arrow = false;
+	// bool display_ground = false;
 
 	vec3 light_color = { 1,1,1 };
-	vec3 brume_color = { 0.5, 0.5, 0. };
-	vec3 light_position = { 0, 0, 2 };
 
 	float ambiant = 0.3f;
 	float diffus = 0.8f;

@@ -21,13 +21,20 @@ void asteroids::apply_perlin() {
 }
 
 void asteroids::idle_frame(float dt, vec3 next_center, numarray<vec3> const& lasers_position) {
+	// numarray<vec3> _smoke_positions;
+	// instance_positions.resize(N_destroyed*N_quad);
+	tmp_positions.resize_clear(0);
 	for (int k = 0; k < N_asteroids; k++) {
 		if (destroyed[k] == 1) {
 			if (inactive_time[k] >= respawn_delay) {
 				positions[k] = center + vec3(rand_uniform(-bound, bound)/2, rand_uniform(-bound, bound)/2, rand_uniform(-bound, bound)/2);
 				destroyed[k] = 0;
 				inactive_time[k] = 0;
-			} else inactive_time[k] += dt;
+				--N_destroyed;
+			} else {
+				inactive_time[k] += dt;
+				for (int i = 0; i < N_quad; i++) tmp_positions.push_back(instance_positions[k * N_quad + i]);
+			}
 		} else {
 			// Checking if out of bounds
 			vec3 p1 = positions[k];
@@ -63,7 +70,17 @@ void asteroids::idle_frame(float dt, vec3 next_center, numarray<vec3> const& las
 				}
 			}
 
-			if (is_destroyed) continue;
+			if (is_destroyed) {
+				for (int i = 0; i < N_quad; i++) {
+					float theta = rand_uniform(0.0f, 2.0f*Pi);
+					float phi = rand_uniform(0.0f, 2.0f*Pi);
+					vec3 pos = positions[k] + rand_uniform(0.0, smoke_radius) * vec3(sin(theta)*cos(phi), sin(theta)*sin(phi), cos(theta));
+					tmp_positions.push_back( pos );
+					instance_positions[k * N_quad + i] = pos;
+				}
+				++N_destroyed;
+				continue;
+			}
 
 			// Update asteroid
 			float angle = norm(angular_velocities[k]) * dt;
@@ -75,6 +92,7 @@ void asteroids::idle_frame(float dt, vec3 next_center, numarray<vec3> const& las
 		}
 	}
 	center = next_center;
+	if (tmp_positions.size()>0) smoke.update_supplementary_data_on_gpu(tmp_positions, 4);
 }
 
 void asteroids::draw(environment_generic_structure const& environment, bool display_wireframe) {
@@ -85,6 +103,12 @@ void asteroids::draw(environment_generic_structure const& environment, bool disp
 		cgp::draw(drawables[mesh_ref[i]], environment);
 		if (display_wireframe) cgp::draw_wireframe(drawables[mesh_ref[i]], environment);
 	}
+	glEnable(GL_BLEND); // Color Blending
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDepthMask(false);
+	cgp::draw(smoke, environment, N_destroyed*N_quad);
+	glDisable(GL_BLEND);
+	glDepthMask(true);
 }
 
 void asteroids::initialize(numarray<vec3> scales, int N, std::string const& texture_path, opengl_shader_structure const& shader) {
@@ -120,4 +144,17 @@ void asteroids::initialize(numarray<vec3> scales, int N, std::string const& text
 		drawables[k].texture.load_and_initialize_texture_2d_on_gpu(texture_path, GL_REPEAT, GL_REPEAT);
 		drawables[k].shader = shader;
 	}
+
+	// Smoke
+	// quad_mesh = mesh_primitive_quadrangle({ -0.5f,0,0 }, { 0.5f,0,0 }, { 0.5f,0,1 }, { -0.5f,0,1 });
+	quad_mesh = mesh_primitive_quadrangle({ -0.5f, -0.5f, 0 }, { 0.5f, -0.5f, 0 }, { 0.5f, 0.5f, 0 }, { -0.5f, 0.5f, 0 });
+	// quad_mesh.scale(10.0f);
+	smoke.initialize_data_on_gpu(quad_mesh);
+	smoke.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/smoke.png");
+	smoke.material.phong = { 1,0,0,1 };
+	smoke.shader.load(project::path + "shaders/shading_custom/instancing.vert.glsl", project::path + "shaders/shading_custom/instancing.frag.glsl");
+	N_instances = N_quad * N_asteroids;
+	instance_positions.resize(N_instances);
+	//for(int i=0; i < N_instances; ++i) instance_positions[i] = { 0.0f, 0.0f, 0.0f };
+	smoke.initialize_supplementary_data_on_gpu(instance_positions, 4, 1);
 }
