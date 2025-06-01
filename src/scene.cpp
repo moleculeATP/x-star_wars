@@ -4,7 +4,7 @@ using namespace cgp;
 
 bool show_asteroids = true;
 int nb_of_ia_combat = 0; // 2 AI ship fighting each other
-bool SKYBOX = true;
+bool SKYBOX = false;
 
 void scene_structure::initialize()
 {

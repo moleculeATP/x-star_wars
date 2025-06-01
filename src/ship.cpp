@@ -134,6 +134,73 @@ void ship::idle_frame(numarray<vec3> const& damaging_pos, numarray<float> const&
             }
         }
 
+        //advanced animations
+        if (is_turning){
+            timer_turning += magnitude;
+
+            if(timer_turning > steps_times[3]){
+                is_turning = false;
+                hierarchy["Vaisseau base"].transform_local.translation = positions_turning[3];
+                hierarchy["Vaisseau base"].transform_local.rotation = rotation_turning[3];
+                velocity = derivative_turning[2];
+                up = up;
+                left = -left;
+                angular_velocity = {0, 0, 0};
+                return;
+            }
+
+            int j;
+
+            if(timer_turning < steps_times[1])
+                j = 0;
+            else if(timer_turning < steps_times[2])
+                j = 1;
+            else
+                j = 2;
+                
+            float alpha = (timer_turning - steps_times[j])/ (steps_times[j + 1] - steps_times[j]);
+
+            // hermite interpolation
+            vec3 pos = (2 * pow(alpha, 3) - 3 * pow(alpha, 2) + 1) * positions_turning[j] +
+                       (pow(alpha, 3) - 2 * pow(alpha, 2) + alpha) * derivative_turning[j] +
+                       (-2 * pow(alpha, 3) + 3 * pow(alpha, 2)) * positions_turning[j + 1] +
+                       (pow(alpha, 3) - pow(alpha, 2)) * derivative_turning[j + 1];
+
+            hierarchy["Vaisseau base"].transform_local.translation = pos;
+            
+            
+            hierarchy["Vaisseau base"].transform_local.rotation = rotation_transform::lerp(rotation_turning[j], rotation_turning[j+1], alpha);
+            
+            return;
+            
+        }
+
+        if (inputs->keyboard.is_pressed(GLFW_KEY_O)){ // fast forward
+            is_turning = true;
+            timer_turning = 0.f;
+            rotation_turning.resize(4);
+            positions_turning.resize(4);
+            derivative_turning.resize(4);
+
+            positions_turning[0] = hierarchy["Vaisseau base"].transform_local.translation;
+            positions_turning[1] = hierarchy["Vaisseau base"].transform_local.translation + ampl_turn * velocity + ampl_turn * up;
+            positions_turning[2] = hierarchy["Vaisseau base"].transform_local.translation + 2* ampl_turn * up;
+            positions_turning[3] = hierarchy["Vaisseau base"].transform_local.translation + 2 * ampl_turn * up + ampl_turn * -velocity;
+
+            rotation_turning[0] = hierarchy["Vaisseau base"].transform_local.rotation;
+            rotation_turning[1]  = rotation_transform::from_frame_transform({1,0,0}, {0,0,1}, up, -velocity);
+            rotation_turning[2] = rotation_transform::from_frame_transform({1,0,0}, {0,0,1}, -velocity, -up);
+            rotation_turning[3] = rotation_transform::from_frame_transform({1,0,0}, {0,0,1}, -velocity, up);
+
+            derivative_turning[0] = velocity;
+            derivative_turning[1] = up;
+            derivative_turning[2] = -velocity;
+            derivative_turning[3] = -velocity;
+
+            return;
+        }
+            
+
         if (inputs->keyboard.is_pressed(GLFW_KEY_Q)) // roll left
             angular_acc += -roll_speed * velocity; // * magnitude if needed
         if (inputs->keyboard.is_pressed(GLFW_KEY_E)) // roll right

@@ -37,6 +37,18 @@ void camera_combat_mode::idle_frame(mat4& camera_matrix_view, ship& ship_to_cont
 	vec3 angular_velocity = ship_to_control.angular_velocity;
 	vec3 pos;
 
+	if(ship_to_control.is_turning){
+		mat3 O = transpose(mat3(camera_matrix_view));    
+		vec4 tmp = (camera_matrix_view*vec4(0.0, 0.0, 0.0, 1.0));
+		vec3 last_col = vec3(tmp[0], tmp[1], tmp[2]); // get the last column
+		vec3 camera_position = -O*last_col;
+
+		look_at(camera_position, // Camera position
+			ship_to_control.hierarchy["Vaisseau base"].transform_local.translation, // Target position
+			ship_to_control.up); // could crash
+		return;
+	}
+
 	float const magnitude = inputs->time_interval;
 	float angle = 5 * norm(ship_to_control.angular_velocity) * magnitude;
 
