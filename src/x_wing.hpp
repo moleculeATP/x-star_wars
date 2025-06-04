@@ -17,7 +17,8 @@ struct x_wing : ship {
     float wing_speed = 0.3f;
 
     std::vector<float> intensities = {0, 0, 0, 0};
-    float coef_reactor = 1;
+    std::vector<vec3> reactor_light_pos;
+    float coef_reactor = 1.f;
     float disp_reactor = .5;
 
     // guns

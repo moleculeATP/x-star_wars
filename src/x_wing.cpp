@@ -193,34 +193,12 @@ namespace cgp {
         float y_offset = -0.028;
         float z_offset = 0.03f;
 
-        std::vector<vec3> reactor_light_pos = {
+        reactor_light_pos = {
             hierarchy["Top right reactor"].drawable.hierarchy_transform_model * (vec3(x_offset, y_offset, z_offset)),
             hierarchy["Top left reactor"].drawable.hierarchy_transform_model * (vec3(x_offset, -y_offset, z_offset)),
             hierarchy["Bottom right reactor"].drawable.hierarchy_transform_model * (vec3(x_offset, y_offset, -z_offset)),
             hierarchy["Bottom left reactor"].drawable.hierarchy_transform_model * (vec3(x_offset, -y_offset, -z_offset))
         };
-
-        environment->uniform_generic.uniform_vec3["light_positions_reactor[0]"] = reactor_light_pos[0];
-        environment->uniform_generic.uniform_float["intensities[0]"] = intensities[0];
-
-        environment->uniform_generic.uniform_vec3["light_positions_reactor[1]"] = reactor_light_pos[1];
-        environment->uniform_generic.uniform_float["intensities[1]"] = intensities[1];
-
-        environment->uniform_generic.uniform_vec3["light_positions_reactor[2]"] = reactor_light_pos[2];
-        environment->uniform_generic.uniform_float["intensities[2]"] = intensities[2];
-
-        environment->uniform_generic.uniform_vec3["light_positions_reactor[3]"] = reactor_light_pos[3];
-        environment->uniform_generic.uniform_float["intensities[3]"] = intensities[3];
-
-        environment->uniform_generic.uniform_vec3["light_color_reactor"] = vec3(1, .8f, .2f);
-        environment->uniform_generic.uniform_float["d_light_max_reactor"] = .2;
-        environment->uniform_generic.uniform_int["N_lights_reactor"] = 4;
-
-
-        environment->uniform_generic.uniform_float["ambiant_reactor"] = 0.2f;
-        environment->uniform_generic.uniform_float["diffus_reactor"] = .7f;
-        environment->uniform_generic.uniform_float["coef_spec_reactor"] = .4f;
-        environment->uniform_generic.uniform_float["coef_exp_reactor"] = 64;
 
         laser_idle_frame();
 
