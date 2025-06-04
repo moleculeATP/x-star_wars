@@ -7,7 +7,8 @@ struct perlin_noise_parameters
 	float persistency = 0.1f;
 	float frequency_gain = 2.0f;
 	int octave = 20;
-	float asteroid_height = 0.5f;
+	float height = 1.0f;
+	vec3 color = {1,1,1};
 };
 
 namespace cgp {
@@ -19,11 +20,14 @@ namespace cgp {
 		// vec3 color = vec3(88.0f/255.0f, 57.0f/255.0f, 39.0f/255.0f);
 		vec3 color = vec3(1, 1, 1);
 		float respawn_delay = 20.0f;
+		perlin_noise_parameters asteroid_perlin_params;
 
 		// Size N_mesh
-		numarray<mesh> meshes; 
+		numarray<mesh> meshes;
+		numarray<mesh> original_meshes;
 		numarray<mesh_drawable> drawables;
-		numarray<perlin_noise_parameters> perlin_params;
+		numarray<float> colision_radius;
+		numarray<float> original_colision_radius;
 
 		// Size N_asteroids
 		numarray<vec3> velocities; 
@@ -31,7 +35,7 @@ namespace cgp {
 		numarray<vec3> positions;
 		numarray<rotation_transform> rotations;
 		numarray<int> mesh_ref; // asteroid id -> mesh model in meshes array
-		numarray<float> colision_radius;
+		
 		int N_destroyed = 0;
 		numarray<int> destroyed;
 		numarray<float> inactive_time;
@@ -55,19 +59,20 @@ namespace cgp {
 		int N_debris;
 		int max_debris = 10;
 		numarray<mesh> debris_meshes;
+		numarray<mesh> original_debris_meshes;
 		numarray<mesh_drawable> debris_drawables;
 		numarray<vec2> asteroid2debris_index; // For each asteroid, have a start and end index in the list of debris to avoid looping over unused debris
 		numarray<vec3> debris_velocities;
 		numarray<vec3> debris_angular_velocities;
 		numarray<vec3> debris_positions;
 		numarray<rotation_transform> debris_rotations;
-		numarray<perlin_noise_parameters> debris_perlin_param;
+		perlin_noise_parameters debris_perlin_params;
 		
 
 		void idle_frame(float dt, vec3 next_center, numarray<vec3> const& lasers_position);
 		void draw(environment_generic_structure const& environment, bool display_wireframe);
-		void apply_perlin();
-		void initialize(numarray<vec3> const& asteroid_scales, numarray<vec3> const& debris_scales, int N, std::string const& texture_path, opengl_shader_structure const& shader);
+		void apply_perlin(perlin_noise_parameters& asteroid_perlin, perlin_noise_parameters& debris_perlin);
+		void initialize(numarray<vec3> const& asteroid_scales, numarray<vec3> const& debris_scales, int Nuv_asteroids, int Nuv_debris, std::string const& texture_path, opengl_shader_structure const& shader);
 	};
 }
 	

@@ -33,6 +33,17 @@ struct gui_parameters {
 	float diffus = 0.8f;
 	float coef_spec = 0.8f;
 	float exp_spec = 20.f;
+
+	float debris_persistency = 0.1f;
+	float debris_frequency_gain = 2.0f;
+	int debris_octave = 20;
+	float debris_height = 1.0f;
+
+	float asteroids_persistency = 0.1f;
+	float asteroids_frequency_gain = 2.0f;
+	int asteroids_octave = 20;
+	float asteroids_height = 1.0f;
+	vec3 asteroids_color = vec3(1, 1, 1);
 };
 
 // The structure of the custom scene

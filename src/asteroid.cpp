@@ -3,16 +3,23 @@
 
 using namespace cgp;
 
-void asteroids::apply_perlin() {
+void asteroids::apply_perlin(perlin_noise_parameters& asteroid_perlin, perlin_noise_parameters& debris_perlin) {
+	asteroid_perlin_params = asteroid_perlin;
+	debris_perlin_params = debris_perlin;
+	
 	// On asteroids
 	for (int k = 0; k < N_mesh; k++) {
-		vec3 rand_color = vec3(rand_uniform(), rand_uniform(), rand_uniform());
+		float volume_rate = 0.0f;
 		for (int i = 0; i < meshes[k].position.size(); i++) {
-			float const noise = noise_perlin(meshes[k].position[i], perlin_params[k].octave, perlin_params[k].persistency, perlin_params[k].frequency_gain);
-			vec3 normal = meshes[k].normal[i];
-			meshes[k].position[i] += normal * noise;
+			// float const noise = noise_perlin(meshes[k].position[i], asteroid_perlin_params.octave, asteroid_perlin_params.persistency, asteroid_perlin_params.frequency_gain);
+			float const noise = asteroid_perlin_params.height * noise_perlin(original_meshes[k].position[i], asteroid_perlin_params.octave, asteroid_perlin_params.persistency, asteroid_perlin_params.frequency_gain);
+			// vec3 normal = meshes[k].normal[i];
+			vec3 normal = original_meshes[k].normal[i];
+			// meshes[k].position[i] += normal * noise;
+			meshes[k].position[i] = original_meshes[k].position[i] + normal * noise;
+			volume_rate += norm(meshes[k].position[i]) / norm(original_meshes[k].position[i]);
 			// meshes[k].color[i] = color * noise;
-			meshes[k].color[i] = rand_color * noise;
+			meshes[k].color[i] = asteroid_perlin_params.color;
 		}
 		meshes[k].fill_empty_field();
 		meshes[k].normal_update();
@@ -20,16 +27,19 @@ void asteroids::apply_perlin() {
 		drawables[k].vbo_position.update(meshes[k].position);
 		drawables[k].vbo_normal.update(meshes[k].normal);
 		drawables[k].vbo_color.update(meshes[k].color);
+		
+		// Ajusting collision radius
+		volume_rate /= meshes[k].position.size();
+		colision_radius[k] = original_colision_radius[k] * volume_rate;
 	}
 
 	// On debris
 	for (int k = 0; k < N_debris_mesh; k++) {
-		vec3 rand_color = vec3(rand_uniform(), rand_uniform(), rand_uniform());
 		for (int i = 0; i < debris_meshes[k].position.size(); i++) {
-			float const noise  = noise_perlin(debris_meshes[k].position[i], debris_perlin_param[k].octave, debris_perlin_param[k].persistency, debris_perlin_param[k].frequency_gain);
-			vec3 normal = debris_meshes[k].normal[i];
-			debris_meshes[k].position[i] += normal * noise;
-			debris_meshes[k].color[i] = rand_color * noise;
+			float const noise = debris_perlin_params.height * noise_perlin(original_debris_meshes[k].position[i], debris_perlin_params.octave, debris_perlin_params.persistency, debris_perlin_params.frequency_gain);
+			vec3 normal = original_debris_meshes[k].normal[i];
+			debris_meshes[k].position[i] = original_debris_meshes[k].position[i] + normal * noise;
+			debris_meshes[k].color[i] = debris_perlin_params.color;
 		}
 
 		debris_meshes[k].fill_empty_field();
@@ -97,7 +107,7 @@ void asteroids::idle_frame(float dt, vec3 next_center, numarray<vec3> const& las
 			bool is_destroyed = false;
 			for (int l = 0;  l < lasers_position.size(); l++) {
 				float d = norm(positions[k] - lasers_position[l]);
-				if (d < colision_radius[k]) {
+				if (d < colision_radius[mesh_ref[k]]) {
 					destroyed[k] = 1;
 					is_destroyed = true;
 					break;
@@ -171,24 +181,25 @@ void asteroids::draw(environment_generic_structure const& environment, bool disp
 	glDepthMask(true);
 }
 
-void asteroids::initialize(numarray<vec3> const& asteroid_scales, numarray<vec3> const& debris_scales, int N, std::string const& texture_path, opengl_shader_structure const& shader) {
+void asteroids::initialize(numarray<vec3> const& asteroid_scales, numarray<vec3> const& debris_scales, int Nuv_asteroids, int Nuv_debris, std::string const& texture_path, opengl_shader_structure const& shader) {
 	meshes.resize(N_mesh);
+	original_meshes.resize(N_mesh);
 	drawables.resize(N_mesh);
-	perlin_params.resize(N_mesh);
+	colision_radius.resize(N_mesh);
+	original_colision_radius.resize(N_mesh);
 
 	angular_velocities.resize(N_asteroids);
 	velocities.resize(N_asteroids);
 	positions.resize(N_asteroids);
 	rotations.resize(N_asteroids);
 	mesh_ref.resize(N_asteroids);
-	colision_radius.resize(N_asteroids);
 	destroyed.resize(N_asteroids);
 	inactive_time.resize(N_asteroids);
 	asteroid2debris_index.resize(N_asteroids);
 
 	debris_meshes.resize(N_debris_mesh);
+	original_debris_meshes.resize(N_debris_mesh);
 	debris_drawables.resize(N_debris_mesh);
-	debris_perlin_param.resize(N_debris_mesh);
 
 	assert(asteroid_scales.size() == N_mesh);
 	assert(debris_scales.size() == N_debris_mesh);
@@ -205,17 +216,22 @@ void asteroids::initialize(numarray<vec3> const& asteroid_scales, numarray<vec3>
 	debris_angular_velocities.resize(N_debris);
 	debris_rotations.resize(N_debris);
 
-	for (int i = 0; i < N_mesh; i++) 
-    	meshes[i] = mesh_primitive_ellipsoid(asteroid_scales[i], {0,0,0}, N, N);
-	for (int i = 0; i < N_debris_mesh; i++)
-		debris_meshes[i] = mesh_primitive_ellipsoid(debris_scales[i], {0,0,0}, N, N);
+	for (int i = 0; i < N_mesh; i++) {
+    	meshes[i] = mesh_primitive_ellipsoid(asteroid_scales[i], {0,0,0}, Nuv_asteroids, Nuv_asteroids);
+		original_meshes[i] = mesh_primitive_ellipsoid(asteroid_scales[i], {0,0,0}, Nuv_asteroids, Nuv_asteroids);
+		colision_radius[i] = (asteroid_scales[i][0] + asteroid_scales[i][1] + asteroid_scales[i][2]) / 3.0f;
+		original_colision_radius[i] = (asteroid_scales[i][0] + asteroid_scales[i][1] + asteroid_scales[i][2]) / 3.0f;
+	}
+	for (int i = 0; i < N_debris_mesh; i++) {
+		debris_meshes[i] = mesh_primitive_ellipsoid(debris_scales[i], {0,0,0}, Nuv_debris, Nuv_debris);
+		original_debris_meshes[i] = mesh_primitive_ellipsoid(debris_scales[i], {0,0,0}, Nuv_debris, Nuv_debris);
+	}
 	for (int i = 0; i < N_asteroids; i++) {
 		positions[i] = center + vec3(rand_uniform(-bound, bound)/2, rand_uniform(-bound, bound)/2, rand_uniform(-bound, bound)/2);
 		velocities[i] = {rand_uniform(-5, 5), rand_uniform(-5, 5), rand_uniform(-5, 5)};
 		angular_velocities[i] = {rand_uniform(-5, 5), rand_uniform(-5, 5), rand_uniform(-5, 5)};
 		int ind = i % N_mesh;
 		mesh_ref[i] = ind;
-		colision_radius[i] = (asteroid_scales[ind][0] + asteroid_scales[ind][1] + asteroid_scales[ind][2]) / 3.0f;
 		destroyed[i] = 0;
 		inactive_time[i] = 0;
 	}

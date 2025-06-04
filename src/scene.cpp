@@ -102,19 +102,22 @@ void scene_structure::initialize()
 
 	// Asteroids
 	if (show_asteroids) {
-		int N_uv = 30;
-		asteroid_set.N_mesh = 10;
-		asteroid_set.N_asteroids = 100;
-		asteroid_set.bound = 150;
-		asteroid_set.N_debris_mesh = 10;
+		int Nuv_asteroids = 50;
+		int Nuv_debris = 20;
+		asteroid_set.N_mesh = 5;
+		asteroid_set.N_asteroids = 50;
+		asteroid_set.bound = 200;
+		asteroid_set.N_debris_mesh = 5;
 		std::vector<vec3> asteroid_scales;
 		std::vector<vec3> debris_scales;
 		for (int i = 0; i < asteroid_set.N_mesh; i++) 
-			asteroid_scales.push_back(vec3(rand_uniform(1.0, 5.0), rand_uniform(2.0, 3.0), rand_uniform(1.0, 6.0)));
+			asteroid_scales.push_back(2.0f * vec3(rand_uniform(0.1, 1.0), rand_uniform(0.1, 0.5), rand_uniform(0.1, 0.8)));
 		for (int i = 0; i < asteroid_set.N_debris_mesh; i++)
-			debris_scales.push_back(vec3(rand_uniform(0.1, 1.0), rand_uniform(0.1, 0.5), rand_uniform(0.1, 0.8)));
-		asteroid_set.initialize(asteroid_scales, debris_scales, N_uv, project::path + "assets/asteroid1.jpg", shader_custom);
-		asteroid_set.apply_perlin();
+			debris_scales.push_back(0.1f * vec3(rand_uniform(0.1, 1.0), rand_uniform(0.1, 0.5), rand_uniform(0.1, 0.8)));
+		asteroid_set.initialize(asteroid_scales, debris_scales, Nuv_asteroids, Nuv_debris, project::path + "assets/asteroid1.jpg", shader_custom);
+		perlin_noise_parameters asteroid_perlin;
+		perlin_noise_parameters debris_perlin;
+		asteroid_set.apply_perlin(asteroid_perlin, debris_perlin);
 	}
 
 	// Remove warnings for unset uniforms
@@ -274,7 +277,7 @@ void scene_structure::display_frame()
 	for (int i = 0; i < asteroid_set.positions.size(); i++) {
 		if (asteroid_set.destroyed[i] == 0) {
 			asteroids_pos.push_back(asteroid_set.positions[i]);
-			asteroids_radius.push_back(asteroid_set.colision_radius[i]);
+			asteroids_radius.push_back(asteroid_set.colision_radius[asteroid_set.mesh_ref[i]]);
 		}
 	}
 
@@ -293,6 +296,7 @@ void scene_structure::display_frame()
 		AI_ship_check_bounds(chads[i], center);
 	}
 
+	
 	if (show_asteroids) asteroid_set.idle_frame(dt, xwing_ship.hierarchy["Vaisseau base"].drawable.model.translation, lasers_pos);
 
 	/**
@@ -378,12 +382,37 @@ void scene_structure::display_gui()
 	ImGui::Checkbox("Wireframe", &gui.display_wireframe);
 	// ImGui::Checkbox("Show ground", &gui.display_ground);
 
-	ImGui::ColorEdit3("Light color", &gui.light_color[0]);
+	if (ImGui::CollapsingHeader("Light")) {
+		ImGui::ColorEdit3("Light color", &gui.light_color[0]);
+		ImGui::SliderFloat("Ambiant", &gui.ambiant, 0.0f, 1.0f);
+		ImGui::SliderFloat("Diffus", &gui.diffus, 0.0f, 1.0f);
+		ImGui::SliderFloat("Spéculaire", &gui.coef_spec, 0.0f, 1.0f);
+		ImGui::SliderFloat("Spéculaire_exp", &gui.exp_spec, 0.0f, 256.f);
+	}
 
-	ImGui::SliderFloat("Ambiant", &gui.ambiant, 0.0f, 1.0f);
-	ImGui::SliderFloat("Diffus", &gui.diffus, 0.0f, 1.0f);
-	ImGui::SliderFloat("Spéculaire", &gui.coef_spec, 0.0f, 1.0f);
-	ImGui::SliderFloat("Spéculaire_exp", &gui.exp_spec, 0.0f, 256.f);
+	if (ImGui::CollapsingHeader("Perlin params")) {
+		bool update = false;
+		ImGui::Spacing();
+		ImGui::Text("Asteroids");
+		update |= ImGui::ColorEdit3("Asteroids color", &gui.asteroids_color[0]);
+		update |= ImGui::SliderFloat("Asteroids persistency", &gui.asteroids_persistency, 0.01f, 1.0f);
+		update |= ImGui::SliderFloat("Asteroids frequency gain", &gui.asteroids_frequency_gain, 0.01f, 10.0f);
+		update |= ImGui::SliderInt("Asteroids octave", &gui.asteroids_octave, 1, 100);
+		update |= ImGui::SliderFloat("Asteroids height", &gui.asteroids_height, 0.01f, 10.0f);
+		ImGui::Spacing();
+		ImGui::Text("Debris");
+		update |= ImGui::SliderFloat("Debris persistency", &gui.debris_persistency, 0.01f, 1.0f);
+		update |= ImGui::SliderFloat("Debris frequency gain", &gui.debris_frequency_gain, 0.01f, 10.0f);
+		update |= ImGui::SliderInt("Debris octave", &gui.debris_octave, 1, 100);
+		update |= ImGui::SliderFloat("Debris height", &gui.debris_height, 0.01f, 10.0f);
+		
+
+		if (update) {
+			perlin_noise_parameters asteroid_perlin = {gui.asteroids_persistency, gui.asteroids_frequency_gain, gui.asteroids_octave, gui.asteroids_height, gui.asteroids_color};
+			perlin_noise_parameters debris_perlin = {gui.debris_persistency, gui.debris_frequency_gain, gui.debris_octave, gui.debris_height, gui.asteroids_color};
+			asteroid_set.apply_perlin(asteroid_perlin, debris_perlin);
+		}
+	}
 }
 
 void scene_structure::mouse_move_event()
@@ -427,6 +456,6 @@ void scene_structure::display_info()
 
 	std::cout << "\nSCENE INFO:" << std::endl;
 	std::cout << "-----------------------------------------------" << std::endl;
-	std::cout << "Exercise on Shading on GPU." << std::endl;
+	std::cout << "Welcome to X-Star-Wars." << std::endl;
 	std::cout << "-----------------------------------------------\n" << std::endl;
 }
