@@ -18,7 +18,7 @@ in struct fragment_data
     vec3 normal;   // normal in the world space
     vec3 color;    // current color on the fragment
     vec2 uv;       // current uv-texture on the fragment
-
+	float alpha;
 } fragment;
 
 // Output of the fragment shader - output color
@@ -113,7 +113,7 @@ void main()
 	}
 
 	// Fully discard the pixel if the alpha value is less than a given threshold.
-	if(color_image_texture.a < 0.5){
+	if(color_image_texture.a < 0.5 || fragment.alpha < 0.1){
 		discard;
 	}
 	
@@ -130,5 +130,5 @@ void main()
 	vec3 color_shading = (Ka + Kd * diffuse_component) * color_object + Ks * specular_component * vec3(1.0, 1.0, 1.0);
 	
 	// Output color, with the alpha component
-	FragColor = vec4(color_shading, material.alpha * color_image_texture.a);
+	FragColor = vec4(color_shading, material.alpha * color_image_texture.a * fragment.alpha);
 }

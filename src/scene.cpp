@@ -3,7 +3,7 @@
 using namespace cgp;
 
 bool show_asteroids = true;
-int nb_of_ia_combat = 0; // 2 AI ship fighting each other
+int nb_of_ia_combat = 2; // 2 AI ship fighting each other
 bool SKYBOX = false;
 
 void scene_structure::initialize()
@@ -102,11 +102,18 @@ void scene_structure::initialize()
 
 	// Asteroids
 	if (show_asteroids) {
-		int N_uv = 100;
+		int N_uv = 30;
 		asteroid_set.N_mesh = 10;
-		asteroid_set.N_asteroids = 150;
-		std::vector<vec3> scales = std::vector<vec3>(asteroid_set.N_mesh, {rand_uniform(0.5, 6.0), rand_uniform(0.5, 1.5), rand_uniform(0.5, 1.5)});
-		asteroid_set.initialize(scales, N_uv, project::path + "assets/asteroid1.jpg", shader_custom);
+		asteroid_set.N_asteroids = 100;
+		asteroid_set.bound = 150;
+		asteroid_set.N_debris_mesh = 10;
+		std::vector<vec3> asteroid_scales;
+		std::vector<vec3> debris_scales;
+		for (int i = 0; i < asteroid_set.N_mesh; i++) 
+			asteroid_scales.push_back(vec3(rand_uniform(1.0, 5.0), rand_uniform(2.0, 3.0), rand_uniform(1.0, 6.0)));
+		for (int i = 0; i < asteroid_set.N_debris_mesh; i++)
+			debris_scales.push_back(vec3(rand_uniform(0.1, 1.0), rand_uniform(0.1, 0.5), rand_uniform(0.1, 0.8)));
+		asteroid_set.initialize(asteroid_scales, debris_scales, N_uv, project::path + "assets/asteroid1.jpg", shader_custom);
 		asteroid_set.apply_perlin();
 	}
 
@@ -122,7 +129,7 @@ void scene_structure::initialize()
 	
 	auto struct_body = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__body.obj");
 	auto struct_wing = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__wing.obj");
-	//auto struct_body_2 = mesh_load_file_obj_advanced(project::path + "assets/tie_model/", "tie.obj");
+	auto struct_body_2 = mesh_load_file_obj_advanced(project::path + "assets/tie_model/", "tie.obj");
 	auto struct_reactor = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "reactor.obj");
 	auto struct_gun = mesh_load_file_obj_advanced(project::path + "assets/x_wing_model/", "x-wing2__gun.obj");
 	xwing_ship.wing = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_wing);
@@ -153,7 +160,7 @@ void scene_structure::initialize()
 	passivship.initialize(inputs, window, shader_custom, laser_shader);
 	passivship.hierarchy["Vaisseau base"].transform_local.translation = {5, 0, 0};
 	*/
-	/**
+	
 	std::vector<mesh_drawable> x_wing_body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body);
 	std::vector<mesh_drawable> x_wing_wing = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_wing);
 	std::vector<mesh_drawable> tie_body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body_2);
@@ -204,7 +211,7 @@ void scene_structure::initialize()
 		chads[i].hierarchy["Vaisseau base"].transform_local.translation = 
 			vec3(rand_uniform(-bound, bound)/2, rand_uniform(-bound, bound)/2, rand_uniform(-bound, bound)/2);
 	}
-			**/
+			
 }
 
 void scene_structure::display_frame()

@@ -38,7 +38,7 @@ struct ship {
 
     bool destruction=false;
     float derive_speed = 0.005f;
-    float colision_radius = .5f;
+    float colision_radius = 2.0f;
 
     // Lasers
     mesh_drawable laser;

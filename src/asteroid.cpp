@@ -4,12 +4,15 @@
 using namespace cgp;
 
 void asteroids::apply_perlin() {
+	// On asteroids
 	for (int k = 0; k < N_mesh; k++) {
+		vec3 rand_color = vec3(rand_uniform(), rand_uniform(), rand_uniform());
 		for (int i = 0; i < meshes[k].position.size(); i++) {
 			float const noise = noise_perlin(meshes[k].position[i], perlin_params[k].octave, perlin_params[k].persistency, perlin_params[k].frequency_gain);
 			vec3 normal = meshes[k].normal[i];
 			meshes[k].position[i] += normal * noise;
-			meshes[k].color[i] = color * noise;
+			// meshes[k].color[i] = color * noise;
+			meshes[k].color[i] = rand_color * noise;
 		}
 		meshes[k].fill_empty_field();
 		meshes[k].normal_update();
@@ -18,12 +21,29 @@ void asteroids::apply_perlin() {
 		drawables[k].vbo_normal.update(meshes[k].normal);
 		drawables[k].vbo_color.update(meshes[k].color);
 	}
+
+	// On debris
+	for (int k = 0; k < N_debris_mesh; k++) {
+		vec3 rand_color = vec3(rand_uniform(), rand_uniform(), rand_uniform());
+		for (int i = 0; i < debris_meshes[k].position.size(); i++) {
+			float const noise  = noise_perlin(debris_meshes[k].position[i], debris_perlin_param[k].octave, debris_perlin_param[k].persistency, debris_perlin_param[k].frequency_gain);
+			vec3 normal = debris_meshes[k].normal[i];
+			debris_meshes[k].position[i] += normal * noise;
+			debris_meshes[k].color[i] = rand_color * noise;
+		}
+
+		debris_meshes[k].fill_empty_field();
+		debris_meshes[k].normal_update();
+
+		debris_drawables[k].vbo_position.update(debris_meshes[k].position);
+		debris_drawables[k].vbo_normal.update(debris_meshes[k].normal);
+		debris_drawables[k].vbo_color.update(debris_meshes[k].color);
+	}
 }
 
 void asteroids::idle_frame(float dt, vec3 next_center, numarray<vec3> const& lasers_position) {
-	// numarray<vec3> _smoke_positions;
-	// instance_positions.resize(N_destroyed*N_quad);
 	tmp_positions.resize_clear(0);
+	tmp_alphas.resize_clear(0);
 	for (int k = 0; k < N_asteroids; k++) {
 		if (destroyed[k] == 1) {
 			if (inactive_time[k] >= respawn_delay) {
@@ -33,7 +53,21 @@ void asteroids::idle_frame(float dt, vec3 next_center, numarray<vec3> const& las
 				--N_destroyed;
 			} else {
 				inactive_time[k] += dt;
-				for (int i = 0; i < N_quad; i++) tmp_positions.push_back(instance_positions[k * N_quad + i]);
+				// Adding smoke to buffer
+				for (int i = 0; i < N_quad; i++) {
+					instance_positions[k * N_quad + i] = instance_positions[k * N_quad + i] + dx * instance_velocities[k * N_quad + i];
+					tmp_positions.push_back(instance_positions[k * N_quad + i]);
+					tmp_alphas.push_back(vec2(1.0f - fade_speed * inactive_time[k] / respawn_delay, 0.0));
+				}
+				// Updating debris
+				vec2 debris_ids = asteroid2debris_index[k];
+				for (int i = debris_ids[0]; i < debris_ids[1]; i++) {
+					float angle = norm(debris_angular_velocities[i]) * dt;
+					vec3 axis = normalize(debris_angular_velocities[i]);
+					rotation_transform rT = rotation_transform::from_axis_angle(axis, angle);
+					debris_rotations[i] *= rT;
+					debris_positions[i] += debris_velocities[i] * dt;
+				}
 			}
 		} else {
 			// Checking if out of bounds
@@ -71,12 +105,25 @@ void asteroids::idle_frame(float dt, vec3 next_center, numarray<vec3> const& las
 			}
 
 			if (is_destroyed) {
+				// Setting smoke quads
 				for (int i = 0; i < N_quad; i++) {
 					float theta = rand_uniform(0.0f, 2.0f*Pi);
 					float phi = rand_uniform(0.0f, 2.0f*Pi);
-					vec3 pos = positions[k] + rand_uniform(0.0, smoke_radius) * vec3(sin(theta)*cos(phi), sin(theta)*sin(phi), cos(theta));
+					vec3 pos = positions[k] + rand_uniform(0.1, smoke_radius) * vec3(sin(theta)*cos(phi), sin(theta)*sin(phi), cos(theta));
 					tmp_positions.push_back( pos );
 					instance_positions[k * N_quad + i] = pos;
+					instance_velocities[k * N_quad + i] = normalize(pos - positions[k]);
+					tmp_alphas.push_back(vec2(1.0f, 0.0f));
+				}
+				// Setting debris parameters
+				vec2 debris_ids = asteroid2debris_index[k];
+				for (int i = debris_ids[0]; i < debris_ids[1]; i++) {
+					float theta = rand_uniform(0.0f, 2.0f*Pi);
+					float phi = rand_uniform(0.0f, 2.0f*Pi);
+					vec3 pos = positions[k] + rand_uniform(0.1, smoke_radius) * vec3(sin(theta)*cos(phi), sin(theta)*sin(phi), cos(theta));
+					debris_positions[i] = pos;
+					debris_velocities[i] = normalize(pos - positions[k]) * rand_uniform(0.1f, 5.0f);
+					debris_angular_velocities[i] = 5.0f * vec3(rand_uniform(-1, 1), rand_uniform(-1, 1), rand_uniform(-1, 1));
 				}
 				++N_destroyed;
 				continue;
@@ -88,21 +135,34 @@ void asteroids::idle_frame(float dt, vec3 next_center, numarray<vec3> const& las
 			rotation_transform rT = rotation_transform::from_axis_angle(axis, angle);
 
 			rotations[k] *= rT;
-			positions[k] += (next_center - center) + velocities[k] * dt;
+			// positions[k] += (next_center - center) + velocities[k] * dt;
+			positions[k] += velocities[k] * dt;
 		}
 	}
 	center = next_center;
 	if (tmp_positions.size()>0) smoke.update_supplementary_data_on_gpu(tmp_positions, 4);
+	if (tmp_alphas.size()>0) smoke.update_supplementary_data_on_gpu(tmp_alphas, 5);
 }
 
 void asteroids::draw(environment_generic_structure const& environment, bool display_wireframe) {
 	for (int i = 0; i < N_asteroids; i++) {
-		if (destroyed[i] == 1) continue;
-		drawables[mesh_ref[i]].model.translation = positions[i];
-		drawables[mesh_ref[i]].model.rotation = rotations[i];
-		cgp::draw(drawables[mesh_ref[i]], environment);
-		if (display_wireframe) cgp::draw_wireframe(drawables[mesh_ref[i]], environment);
+		if (destroyed[i] == 1) {
+			vec2 debris_ids = asteroid2debris_index[i];
+			for (int k = debris_ids[0]; k < debris_ids[1]; k++) {
+				int ind = k % N_debris_mesh;
+				debris_drawables[ind].model.translation = debris_positions[k];
+				debris_drawables[ind].model.rotation = debris_rotations[k];
+				cgp::draw(debris_drawables[ind], environment);
+				if (display_wireframe) cgp::draw_wireframe(debris_drawables[ind], environment);
+			}
+		} else {
+			drawables[mesh_ref[i]].model.translation = positions[i];
+			drawables[mesh_ref[i]].model.rotation = rotations[i];
+			cgp::draw(drawables[mesh_ref[i]], environment);
+			if (display_wireframe) cgp::draw_wireframe(drawables[mesh_ref[i]], environment);
+		}
 	}
+	// Drawing smoke last
 	glEnable(GL_BLEND); // Color Blending
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDepthMask(false);
@@ -111,7 +171,7 @@ void asteroids::draw(environment_generic_structure const& environment, bool disp
 	glDepthMask(true);
 }
 
-void asteroids::initialize(numarray<vec3> scales, int N, std::string const& texture_path, opengl_shader_structure const& shader) {
+void asteroids::initialize(numarray<vec3> const& asteroid_scales, numarray<vec3> const& debris_scales, int N, std::string const& texture_path, opengl_shader_structure const& shader) {
 	meshes.resize(N_mesh);
 	drawables.resize(N_mesh);
 	perlin_params.resize(N_mesh);
@@ -124,17 +184,38 @@ void asteroids::initialize(numarray<vec3> scales, int N, std::string const& text
 	colision_radius.resize(N_asteroids);
 	destroyed.resize(N_asteroids);
 	inactive_time.resize(N_asteroids);
+	asteroid2debris_index.resize(N_asteroids);
 
-	assert(scales.size() == N_mesh);
+	debris_meshes.resize(N_debris_mesh);
+	debris_drawables.resize(N_debris_mesh);
+	debris_perlin_param.resize(N_debris_mesh);
+
+	assert(asteroid_scales.size() == N_mesh);
+	assert(debris_scales.size() == N_debris_mesh);
+
+	// Set a definitive number of debris per asteroid
+	N_debris = 0;
+	for (int i = 0; i < N_asteroids; i++) {
+		int n = rand_uniform(2, max_debris);
+		asteroid2debris_index[i] = vec2(N_debris, N_debris+n);
+		N_debris += n;
+	}
+	debris_positions.resize(N_debris);
+	debris_velocities.resize(N_debris);
+	debris_angular_velocities.resize(N_debris);
+	debris_rotations.resize(N_debris);
+
 	for (int i = 0; i < N_mesh; i++) 
-    	meshes[i] = mesh_primitive_ellipsoid(scales[i], {0,0,0}, N, N);
+    	meshes[i] = mesh_primitive_ellipsoid(asteroid_scales[i], {0,0,0}, N, N);
+	for (int i = 0; i < N_debris_mesh; i++)
+		debris_meshes[i] = mesh_primitive_ellipsoid(debris_scales[i], {0,0,0}, N, N);
 	for (int i = 0; i < N_asteroids; i++) {
 		positions[i] = center + vec3(rand_uniform(-bound, bound)/2, rand_uniform(-bound, bound)/2, rand_uniform(-bound, bound)/2);
 		velocities[i] = {rand_uniform(-5, 5), rand_uniform(-5, 5), rand_uniform(-5, 5)};
 		angular_velocities[i] = {rand_uniform(-5, 5), rand_uniform(-5, 5), rand_uniform(-5, 5)};
 		int ind = i % N_mesh;
 		mesh_ref[i] = ind;
-		colision_radius[i] = (scales[ind][0] + scales[ind][1] + scales[ind][2]) / 3.0f;
+		colision_radius[i] = (asteroid_scales[ind][0] + asteroid_scales[ind][1] + asteroid_scales[ind][2]) / 3.0f;
 		destroyed[i] = 0;
 		inactive_time[i] = 0;
 	}
@@ -145,16 +226,22 @@ void asteroids::initialize(numarray<vec3> scales, int N, std::string const& text
 		drawables[k].shader = shader;
 	}
 
+	for (int k = 0; k < N_debris_mesh; k++) {
+		debris_drawables[k].initialize_data_on_gpu(debris_meshes[k]);
+		debris_drawables[k].texture.load_and_initialize_texture_2d_on_gpu(texture_path, GL_REPEAT, GL_REPEAT);
+		debris_drawables[k].shader = shader;
+	}
+
 	// Smoke
-	// quad_mesh = mesh_primitive_quadrangle({ -0.5f,0,0 }, { 0.5f,0,0 }, { 0.5f,0,1 }, { -0.5f,0,1 });
 	quad_mesh = mesh_primitive_quadrangle({ -0.5f, -0.5f, 0 }, { 0.5f, -0.5f, 0 }, { 0.5f, 0.5f, 0 }, { -0.5f, 0.5f, 0 });
-	// quad_mesh.scale(10.0f);
 	smoke.initialize_data_on_gpu(quad_mesh);
 	smoke.texture.load_and_initialize_texture_2d_on_gpu(project::path + "assets/smoke.png");
 	smoke.material.phong = { 1,0,0,1 };
 	smoke.shader.load(project::path + "shaders/shading_custom/instancing.vert.glsl", project::path + "shaders/shading_custom/instancing.frag.glsl");
 	N_instances = N_quad * N_asteroids;
 	instance_positions.resize(N_instances);
-	//for(int i=0; i < N_instances; ++i) instance_positions[i] = { 0.0f, 0.0f, 0.0f };
+	instance_velocities.resize(N_instances);
+	instance_alphas.resize(N_instances);
 	smoke.initialize_supplementary_data_on_gpu(instance_positions, 4, 1);
+	smoke.initialize_supplementary_data_on_gpu(instance_alphas, 5, 1);
 }

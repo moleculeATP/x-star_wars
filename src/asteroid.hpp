@@ -18,7 +18,7 @@ namespace cgp {
 		vec3 center;
 		// vec3 color = vec3(88.0f/255.0f, 57.0f/255.0f, 39.0f/255.0f);
 		vec3 color = vec3(1, 1, 1);
-		float respawn_delay = 100.0f;
+		float respawn_delay = 20.0f;
 
 		// Size N_mesh
 		numarray<mesh> meshes; 
@@ -42,14 +42,32 @@ namespace cgp {
 		int N_quad = 100;
 		int N_instances;
 		float smoke_radius = 1.0f;
+		float dx = 0.005;
+		float fade_speed = 1.1f;
 		numarray<vec3> instance_positions;
+		numarray<vec3> instance_velocities;
+		numarray<vec2> instance_alphas;
 		numarray<vec3> tmp_positions;
-		numarray<vec3> tmp_rotations;
+		numarray<vec2> tmp_alphas;
+
+		// Debris
+		int N_debris_mesh;
+		int N_debris;
+		int max_debris = 10;
+		numarray<mesh> debris_meshes;
+		numarray<mesh_drawable> debris_drawables;
+		numarray<vec2> asteroid2debris_index; // For each asteroid, have a start and end index in the list of debris to avoid looping over unused debris
+		numarray<vec3> debris_velocities;
+		numarray<vec3> debris_angular_velocities;
+		numarray<vec3> debris_positions;
+		numarray<rotation_transform> debris_rotations;
+		numarray<perlin_noise_parameters> debris_perlin_param;
+		
 
 		void idle_frame(float dt, vec3 next_center, numarray<vec3> const& lasers_position);
 		void draw(environment_generic_structure const& environment, bool display_wireframe);
 		void apply_perlin();
-		void initialize(numarray<vec3> scales, int N, std::string const& texture_path, opengl_shader_structure const& shader);
+		void initialize(numarray<vec3> const& asteroid_scales, numarray<vec3> const& debris_scales, int N, std::string const& texture_path, opengl_shader_structure const& shader);
 	};
 }
 	
