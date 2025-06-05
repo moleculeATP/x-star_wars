@@ -4,7 +4,7 @@ using namespace cgp;
 
 bool show_asteroids = true;
 int nb_of_ia_combat = 2; // 2 AI ship fighting each other
-bool SKYBOX = false;
+bool SKYBOX = true;
 
 void scene_structure::initialize()
 {
@@ -140,8 +140,18 @@ void scene_structure::initialize()
 	xwing_ship.gun = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_gun);
 	xwing_ship.reactor.initialize_data_on_gpu(mesh_load_file_obj(project::path + "assets/x_wing_model/reactor.obj"));
 	
+	
+	std::vector<mesh_drawable> x_wing_body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body);
+	std::vector<mesh_drawable> x_wing_wing = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_wing);
+	std::vector<mesh_drawable> tie_body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body_2);
+	std::vector<mesh> mesh_tie;
+
 	xwing_ship.initialize(inputs, window, shader_custom, laser_shader, reactor_shader);
-	xwing_ship.environment = &environment;
+
+	aiship.initialize(inputs, window, shader_custom, laser_shader);
+	aiship.set_target(&xwing_ship);
+	aiship.body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body_2);
+	aiship.respawn(vec3(-10, 0, 0), rotation_axis_angle(vec3(1, 0, 0), 0));
 
 	/** code test IA
 	xwing_aiship.body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body);
@@ -164,10 +174,7 @@ void scene_structure::initialize()
 	passivship.hierarchy["Vaisseau base"].transform_local.translation = {5, 0, 0};
 	*/
 	
-	std::vector<mesh_drawable> x_wing_body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body);
-	std::vector<mesh_drawable> x_wing_wing = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_wing);
-	std::vector<mesh_drawable> tie_body = mesh_obj_advanced_loader::convert_to_mesh_drawable(struct_body_2);
-	std::vector<mesh> mesh_tie;
+	
 	mesh_tie.resize(tie_body.size());
 	for (int i = 0; i < tie_body.size(); i++) {
 		mesh_tie[i] = struct_body_2[i].mesh_element;
@@ -281,19 +288,47 @@ void scene_structure::display_frame()
 		}
 	}
 
+	
 	numarray<vec3> lasers_pos;
+
+	
 	for (int i = 0; i < xwing_ship.lasers_pos.size(); i++)
 		if (xwing_ship.lasers_active[i]) lasers_pos.push_back(xwing_ship.lasers_pos[i]);
+
+
+	// debut commentaire si pas fix
+	/**
+	for(int i = 0; i < nb_of_ia_combat; i++){
+		for(int j = 0; j < chads[i].lasers_pos.size(); j++){
+			if (chads[i].lasers_active[j]) lasers_pos.push_back(chads[i].lasers_pos[j]);
+		}
+	}
+		**/
+	// fin commentaire si pas fix
+
 	xwing_ship.idle_frame(asteroids_pos, asteroids_radius);
 
+
+	vec3 center = xwing_ship.hierarchy["Vaisseau base"].transform_local.translation;
 	for(int i = 0; i < nb_of_ia_combat; i++){
 		victims[i].idle_frame(lasers_pos);
 		chads[i].idle_frame(lasers_pos);
 
-		vec3 center = xwing_ship.hierarchy["Vaisseau base"].transform_local.translation;
-
 		AI_ship_check_bounds(victims[i], center);
 		AI_ship_check_bounds(chads[i], center);
+		rotation_transform rT0_ = rotation_transform::from_frame_transform({1,0,0}, {0,0,1}, {1, 0, 0}, {0, 0, 1});
+
+		if(victims[i].destruction and victims[i].respawn_timer < 0){
+			victims[i].respawn(vec3(0, 0, 0), rT0_);
+		}else{
+			victims[i].respawn_timer -= dt;
+		}
+		
+		if(chads[i].destruction and chads[i].respawn_timer < 0){
+			chads[i].respawn(vec3(0, 0, 0), rT0_);
+		}else{
+			chads[i].respawn_timer -= dt;
+		}
 	}
 
 	

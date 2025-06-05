@@ -40,6 +40,8 @@ struct ship {
     float derive_speed = 0.005f;
     float colision_radius = 2.0f;
 
+    float respawn_timer = 0;
+
     // Lasers
     mesh_drawable laser;
     int N_lasers = 19;

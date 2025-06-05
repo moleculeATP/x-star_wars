@@ -80,6 +80,7 @@ void ship::draw_lasers(environment_generic_structure const& environment) {
 }
 
 void ship::destruction_trigger(vec3 impact_pos, vec3 normal_destruction){
+    respawn_timer = 5;
     destruction = true;
     STOP = true;
     impact_pos = impact_pos;
@@ -106,6 +107,7 @@ void ship::respawn(vec3 position, rotation_transform rotation){
     laser_dt = 0;
     last_laser = 0;
     lasers_active.fill(0);
+    respawn_timer = 0;
 
 }
 
