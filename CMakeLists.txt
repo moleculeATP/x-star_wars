@@ -41,6 +41,7 @@ project(${executable_name})
 include_directories("src")
 include_directories("src/camera_combat_mode")
 
+
 # Add the lib directory
 include_directories(${ABS_PATH_TO_CGP})
 

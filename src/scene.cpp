@@ -61,8 +61,8 @@ void scene_structure::initialize()
 	if (show_asteroids) {
 		int Nuv_asteroids = 70;
 		int Nuv_debris = 20;
-		asteroid_set.N_mesh = 8;
-		asteroid_set.N_asteroids = 10;
+		asteroid_set.N_mesh = 10;
+		asteroid_set.N_asteroids = 100;
 		asteroid_set.bound = 200;
 		asteroid_set.N_debris_mesh = 10;
 		std::vector<vec3> asteroid_scales;
