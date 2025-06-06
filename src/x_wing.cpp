@@ -8,8 +8,8 @@ namespace cgp {
         ship::initialize(inputs, window, shader, laser_shader);
         float scaling = 0.04f;
         debris.resize(body.size() + 2 * wing.size());
-
         
+        // Filling hierrachy
         for (int k = 0; k < body.size(); ++k){
             body[k].model.scaling = scaling;
             std::string name = "Body " + str(k);
@@ -98,17 +98,6 @@ namespace cgp {
         hierarchy.add(reactor_, "Bottom right reactor", "Bottom right wing", {0, -0.042f, -0.006f});
         hierarchy["Bottom right reactor"].drawable.shader = reactor_shader;
         hierarchy["Bottom right reactor"].drawable.material.color = vec3(.2, .07, .0);
-    
-        //mesh_drawable tmp2 = mesh_drawable();
-        //tmp2.initialize_data_on_gpu(mesh_primitive_sphere(0.02, {-0.147, -0.072, 0.036}));
-        //hierarchy.add(tmp2, "Top right reactor sphere", "Top right wing");
-
-        /**
-        debris = std::vector<mesh_drawable> (10);
-        for(int i = 0; i < 10; i++){
-            debris[i].initialize_data_on_gpu(mesh_primitive_sphere(0.02, {0, 0, 0}));
-        }
-        */
     }    
 
     void x_wing::idle_frame(numarray<vec3> const& damaging_pos, numarray<float> const& damaging_radius) {
@@ -137,7 +126,7 @@ namespace cgp {
             }
         }
 
-        // coloration reacteurs
+        // Reactors coloration
         else{
             if (inputs->keyboard.is_pressed(GLFW_KEY_Q)){
                 intensities[0] = std::min(sup, intensities[0] + magnitude*coef_reactor);
@@ -168,7 +157,7 @@ namespace cgp {
             }
         }
 
-        // animation canon
+        // Canon animation
         float k = 15; float s = 0.7;
         for (int i = 0; i < 4; i++) {
             if (guns_trigered[i]) {
@@ -181,7 +170,6 @@ namespace cgp {
                 }
             }
         }
-        
 
         for(int i = 0; i < 4; i++){
             intensities[i] = std::max(intensities[i] - disp_reactor*magnitude, 0.f);
@@ -201,12 +189,9 @@ namespace cgp {
         };
 
         laser_idle_frame();
-
-        
     }
 
     void x_wing::laser_idle_frame() {
-        // Lasers
         float dt = inputs->time_interval;
         if (inputs->keyboard.is_pressed(GLFW_KEY_P) && laser_dt >= laser_delay) {
             laser_dt = 0;

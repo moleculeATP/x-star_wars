@@ -34,10 +34,10 @@ struct gui_parameters {
 	float coef_spec = 0.8f;
 	float exp_spec = 20.f;
 
-	float debris_persistency = 0.1f;
+	float debris_persistency = 0.8f;
 	float debris_frequency_gain = 2.0f;
 	int debris_octave = 20;
-	float debris_height = 1.0f;
+	float debris_height = 0.1f;
 
 	float asteroids_persistency = 0.1f;
 	float asteroids_frequency_gain = 2.0f;
@@ -71,35 +71,34 @@ struct scene_structure : cgp::scene_inputs_generic {
 	// ****************************** //
 
 	timer_basic timer;
-	//mesh_drawable ground;
-	mesh_drawable cube;
-
-	mesh_drawable sphere;
-	mesh_drawable camel;
+	float t = 0.0f;
 
 	mesh_drawable sphere_light;
+
+	skybox_drawable skybox;
+
+	asteroids asteroid_set;
+
+	// Ships
 	mesh_drawable xwing;
 	std::vector<mesh_drawable> shapes;
-	mesh_drawable laser_shot;
-
 	x_wing xwing_ship;
 	ai_ship aiship;
 	passiv_ship passivship;
 	x_wing_passiv_ship xwing_passivship;
 	x_wing_ai_ship xwing_aiship;
-	asteroids asteroid_set;
 
 	std::vector<passiv_ship> victims;
 	std::vector<ai_ship> chads;
 	float bound = 30.0f;
 
-	skybox_drawable skybox;
-
 	// Shaders
-	opengl_shader_structure shader_mesh;
 	opengl_shader_structure shader_custom;
 	opengl_shader_structure laser_shader;
 	opengl_shader_structure reactor_shader;
+	opengl_shader_structure extract_light_shader;
+	opengl_shader_structure blur_shader;
+	opengl_shader_structure blend_shader;
 
 	// ****************************** //
 	// Functions

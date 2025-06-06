@@ -64,7 +64,7 @@ void main()
 	if (material.texture_settings.two_sided && gl_FrontFacing == false) {
 		N = -N;
 	}
-
+    
     vec3 end_color = vec3(0, 0, 0);
     for (int i = 0; i < N_lights; i++) {
         if (active_lights[i] == 0) continue;

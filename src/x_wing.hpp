@@ -21,7 +21,7 @@ struct x_wing : ship {
     float coef_reactor = 1.f;
     float disp_reactor = .5;
 
-    // guns
+    // Guns
     numarray<std::string> canons_name = {"Top right laser", "Bottom left laser", "Top left laser", "Bottom right laser"};
     numarray<std::string> guns_name = {"Top right gun", "Bottom left gun", "Top left gun", "Bottom right gun"};
     std::vector<bool> guns_trigered = {0, 0, 0, 0}; 

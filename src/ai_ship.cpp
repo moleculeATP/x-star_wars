@@ -5,6 +5,7 @@ namespace cgp {
     void ai_ship::initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader, opengl_shader_structure& laser_shader){
         ship::initialize(inputs, window, shader, laser_shader);
         float scaling = 0.05f;
+        laser_delay = 0.05f;
         debris.resize(debris_mesh.size());
         
         for (int k = 0; k < body.size(); ++k){
@@ -13,27 +14,18 @@ namespace cgp {
             hierarchy.add(body[k], name, "Vaisseau base");
             debris[k] = body[k];
 
-            
             numarray<vec3> pos = debris_mesh[k].position;
-            int n = 0;
             vec3 barycenter = {0, 0, 0};
             for(int j = 0; j < pos.size(); ++j){
                 barycenter += pos[j];
-                n++;
             }
             
-            //debris_mesh[k] = debris_mesh[k].centered();
-            //debris[k] = mesh_drawable();
-            //debris[k].initialize_data_on_gpu(debris_mesh[k]);
-            //debris[k].model.scaling = scaling;
             debris[k].model.translation = hierarchy["Vaisseau base"].transform_local.translation - barycenter*scaling;
-        
-        
             hierarchy[name].drawable.shader = shader;
         }
     }
 
-    void ai_ship::idle_frame(numarray<vec3> const& damaging_pos)
+    void ai_ship::idle_frame(numarray<vec3> const& damaging_pos, numarray<float> const& damaging_radius)
 {
     assert_cgp_no_msg(inputs != nullptr);
     assert_cgp_no_msg(window != nullptr);
@@ -46,12 +38,8 @@ namespace cgp {
     }
 
     // Check colisions
-    for (int i = 0; i < damaging_pos.size(); i++) {
-        float d = norm(damaging_pos[i] - hierarchy["Vaisseau base"].transform_local.translation);
-        if (colision_radius > d) {
+    if (check_colision(damaging_pos, damaging_radius))
             destruction_trigger(hierarchy["Vaisseau base"].transform_local.translation + 0.5 * velocity, -velocity);
-        }
-    }
 
     if (STOP) return;
 
@@ -101,14 +89,12 @@ namespace cgp {
 
 
     void ai_ship::laser_idle_frame() {
-        // Lasers
         float dt = inputs->time_interval;
         float distance_tir_max = 100;
         float distance_tir_min = 5;
-        laser_delay = 0.05f;
         
         float dist = norm(hierarchy["Vaisseau base"].drawable.hierarchy_transform_model.translation - target->hierarchy["Vaisseau base"].drawable.hierarchy_transform_model.translation);
-        bool dist_ok = distance_tir_min< dist < distance_tir_max;
+        bool dist_ok = (distance_tir_min < dist) && (dist < distance_tir_max);
         vec3 vect1 = normalize(velocity);
         vec3 vect2 = target->hierarchy["Vaisseau base"].drawable.hierarchy_transform_model.translation - hierarchy["Vaisseau base"].drawable.hierarchy_transform_model.translation;
         // Check if the angle between the ship and the target is small enough to fire

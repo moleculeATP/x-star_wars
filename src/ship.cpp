@@ -1,17 +1,12 @@
-#pragma once
 #include "ship.hpp"
-
 
 namespace cgp{
 
-
 ship::ship()
 {
-
     inputs = nullptr;
     window = nullptr;
     is_cursor_trapped = false;
-
 }
 
 void ship::initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader, opengl_shader_structure& laser_shader)
@@ -36,7 +31,7 @@ void ship::initialize(input_devices& inputs, window_structure& window, opengl_sh
     arrow_left.initialize_data_on_gpu(arrow_left_mesh);
     arrow_left.material.color = {0, 1, 0};
 
-    // wings initialization
+    // wings initialization 
     // we only need one wing, we will use it 4 times (the one stocked on wing is top right)
     hierarchy = hierarchy_mesh_drawable();
     mesh_drawable  base;
@@ -48,9 +43,9 @@ void ship::initialize(input_devices& inputs, window_structure& window, opengl_sh
     destruction = false;
 
     // Lasers
-    mesh laser_mesh = mesh_primitive_cylinder(0.03f, {0,0,0}, {0,0,0.2f}, 10, 10, true);
+    mesh laser_mesh = mesh_primitive_cylinder(laser_radius, {0,0,0}, {0,0,0.2f}, 10, 10, true);
     laser.initialize_data_on_gpu(laser_mesh);
-    laser.material.color = vec3(1, 1, 1);
+    laser.material.color = laser_material_color;
     laser.shader = laser_shader;
     lasers_pos.resize(N_lasers);
     lasers_velocity.resize(N_lasers);
@@ -68,22 +63,20 @@ void ship::draw(environment_generic_structure const& environment){
 }
 
 void ship::draw_lasers(environment_generic_structure const& environment) {
-    // Lasers
     for (int i = 0; i < lasers_pos.size(); i++) {
         if (lasers_active[i] == 1) {
             laser.model.rotation = lasers_orientation[i];
             laser.model.translation = lasers_pos[i];
-            // laser.material.color = x_wing::lasers_color;
             cgp::draw(laser, environment);
         }
     }
 }
 
-void ship::destruction_trigger(vec3 impact_pos, vec3 normal_destruction){
+void ship::destruction_trigger(vec3 impact_position, vec3 normal_destruction){
     respawn_timer = 5;
     destruction = true;
     STOP = true;
-    impact_pos = impact_pos;
+    impact_pos = impact_position;
     normal_destruction = normalize(normal_destruction);
     this->normal_destruction = normal_destruction;
     directions_destruction = std::vector<vec3> (debris.size());
@@ -129,12 +122,8 @@ void ship::idle_frame(numarray<vec3> const& damaging_pos, numarray<float> const&
         }
 
         // Check colisions
-        for (int i = 0; i < damaging_pos.size(); i++) {
-            float d = norm(damaging_pos[i] - hierarchy["Vaisseau base"].transform_local.translation);
-            if (colision_radius + damaging_radius[i] > d) {
-                destruction_trigger(hierarchy["Vaisseau base"].transform_local.translation + 0.5 * velocity, -velocity);
-            }
-        }
+        if (check_colision(damaging_pos, damaging_radius)) 
+            destruction_trigger(hierarchy["Vaisseau base"].transform_local.translation + 0.5 * velocity, -velocity);
 
         //advanced animations
         if (is_turning){
@@ -145,14 +134,12 @@ void ship::idle_frame(numarray<vec3> const& damaging_pos, numarray<float> const&
                 hierarchy["Vaisseau base"].transform_local.translation = positions_turning[3];
                 hierarchy["Vaisseau base"].transform_local.rotation = rotation_turning[3];
                 velocity = derivative_turning[2];
-                up = up;
                 left = -left;
                 angular_velocity = {0, 0, 0};
                 return;
             }
 
             int j;
-
             if(timer_turning < steps_times[1])
                 j = 0;
             else if(timer_turning < steps_times[2])
@@ -169,12 +156,8 @@ void ship::idle_frame(numarray<vec3> const& damaging_pos, numarray<float> const&
                        (pow(alpha, 3) - pow(alpha, 2)) * derivative_turning[j + 1];
 
             hierarchy["Vaisseau base"].transform_local.translation = pos;
-            
-            
             hierarchy["Vaisseau base"].transform_local.rotation = rotation_transform::lerp(rotation_turning[j], rotation_turning[j+1], alpha);
-            
             return;
-            
         }
 
         if (inputs->keyboard.is_pressed(GLFW_KEY_O)){ // fast forward
@@ -239,9 +222,6 @@ void ship::idle_frame(numarray<vec3> const& damaging_pos, numarray<float> const&
 
         angular_velocity *= amorti_angulaire; 
 
-        
-
-        // body.model.rotation = rotation_transform::from_frame_transform({1,0,0}, {0,0,1}, velocity, up);
         hierarchy["Vaisseau base"].transform_local.translation = hierarchy["Vaisseau base"].transform_local.translation + velocity * speed;
         hierarchy["Vaisseau base"].transform_local.rotation = rotation_transform::from_frame_transform({1,0,0}, {0,0,1}, velocity, up);
 
@@ -249,16 +229,13 @@ void ship::idle_frame(numarray<vec3> const& damaging_pos, numarray<float> const&
         arrow_left.model.translation = hierarchy["Vaisseau base"].transform_local.translation;
         arrow_velocity.model.translation = hierarchy["Vaisseau base"].transform_local.translation;
 
-    }else
+    } else
         destructed_idle_frame();
 }
 
 
 void ship::destructed_idle_frame(){
-    for(int k = 0; k < debris.size(); ++k){
-            
-        vec3 incd = debris[k].model.translation - impact_pos;
-        vec3 dir = normalize(normal_destruction);
+    for(int k = 0; k < debris.size(); ++k){ 
         debris[k].model.translation += derive_speed * directions_destruction[k];
 
         float angle = norm(angular_velocity_destruction[k]) * inputs->time_interval;
@@ -272,6 +249,16 @@ void ship::destructed_idle_frame(){
     }
 }
 
+bool ship::check_colision(numarray<vec3> const& damaging_pos, numarray<float> const& damaging_radius) {
+    for (int i = 0; i < damaging_pos.size(); i++) {
+        float d = norm(damaging_pos[i] - hierarchy["Vaisseau base"].transform_local.translation);
+        if (colision_radius + damaging_radius[i] > d) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void ship::set_mesh_shader(opengl_shader_structure& shader) {
     this->shader = &shader;
     for (int i = 0; i < hierarchy.elements.size(); i++) {
@@ -279,7 +266,7 @@ void ship::set_mesh_shader(opengl_shader_structure& shader) {
     } 
 }
     
-void ship::set_laser_shader(opengl_shader_structure& laser_shader){
+void ship::set_laser_shader(opengl_shader_structure& laser_shader) {
     this->laser_shader = &laser_shader;
     laser.shader = laser_shader;
 }

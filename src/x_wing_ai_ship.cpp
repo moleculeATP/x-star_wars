@@ -5,7 +5,6 @@ namespace cgp {
     void x_wing_ai_ship::initialize(input_devices& inputs, window_structure& window, opengl_shader_structure& shader, opengl_shader_structure& laser_shader){
         ship::initialize(inputs, window, shader, laser_shader);
 
-        // malheuresement : ctr C ctr V de x wing
         float scaling = 0.04f;
         debris.resize(body.size() + 2 * wing.size());
 

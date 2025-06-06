@@ -4,10 +4,9 @@
 
 namespace cgp{
 
-    void passiv_ship::idle_frame(numarray<vec3> const& damaging_pos){
+    void passiv_ship::idle_frame(numarray<vec3> const& damaging_pos, numarray<float> const& damaging_radius){
         assert_cgp_no_msg(inputs != nullptr);
         assert_cgp_no_msg(window != nullptr);
-
 
         if (destruction) {
             destructed_idle_frame();
@@ -15,14 +14,9 @@ namespace cgp{
         }
 
         // Check colisions
-        for (int i = 0; i < damaging_pos.size(); i++) {
-            float d = norm(damaging_pos[i] - hierarchy["Vaisseau base"].transform_local.translation);
-            if (colision_radius > d) {
+        if (check_colision(damaging_pos, damaging_radius))
                 destruction_trigger(hierarchy["Vaisseau base"].transform_local.translation + 0.5 * velocity, -velocity);
-            }
-        }
 
-        
         if(time_remaining > 0.0f){
             time_remaining -= inputs->time_interval;
 
@@ -52,9 +46,7 @@ namespace cgp{
             arrow_velocity.model.translation = hierarchy["Vaisseau base"].transform_local.translation;
 
         } else {
-
             time_remaining = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/time_max));
-
             switch(rand() % 10){
                 case 0:
                     current_accel_component = -roll_speed * velocity;
@@ -85,7 +77,6 @@ namespace cgp{
         ship::initialize(inputs, window, shader, laser_shader);
         float scaling = 0.07f;
         debris.resize(body.size());
-
         
         for (int k = 0; k < body.size(); ++k){
             body[k].model.scaling = scaling;

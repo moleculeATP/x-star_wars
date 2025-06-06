@@ -9,16 +9,12 @@ void asteroids::apply_perlin(perlin_noise_parameters& asteroid_perlin, perlin_no
 	
 	// On asteroids
 	for (int k = 0; k < N_mesh; k++) {
-		float volume_rate = 0.0f;
+		// float volume_rate = 0.0f;
 		for (int i = 0; i < meshes[k].position.size(); i++) {
-			// float const noise = noise_perlin(meshes[k].position[i], asteroid_perlin_params.octave, asteroid_perlin_params.persistency, asteroid_perlin_params.frequency_gain);
 			float const noise = asteroid_perlin_params.height * noise_perlin(original_meshes[k].position[i], asteroid_perlin_params.octave, asteroid_perlin_params.persistency, asteroid_perlin_params.frequency_gain);
-			// vec3 normal = meshes[k].normal[i];
 			vec3 normal = original_meshes[k].normal[i];
-			// meshes[k].position[i] += normal * noise;
 			meshes[k].position[i] = original_meshes[k].position[i] + normal * noise;
-			volume_rate += norm(meshes[k].position[i]) / norm(original_meshes[k].position[i]);
-			// meshes[k].color[i] = color * noise;
+			// volume_rate += norm(meshes[k].position[i]) / norm(original_meshes[k].position[i]);
 			meshes[k].color[i] = asteroid_perlin_params.color;
 		}
 		meshes[k].fill_empty_field();
@@ -29,8 +25,8 @@ void asteroids::apply_perlin(perlin_noise_parameters& asteroid_perlin, perlin_no
 		drawables[k].vbo_color.update(meshes[k].color);
 		
 		// Ajusting collision radius
-		volume_rate /= meshes[k].position.size();
-		colision_radius[k] = original_colision_radius[k] * volume_rate;
+		// volume_rate /= meshes[k].position.size();
+		colision_radius[k] = original_colision_radius[k] * asteroid_perlin_params.height;
 	}
 
 	// On debris
@@ -51,10 +47,12 @@ void asteroids::apply_perlin(perlin_noise_parameters& asteroid_perlin, perlin_no
 	}
 }
 
-void asteroids::idle_frame(float dt, vec3 next_center, numarray<vec3> const& lasers_position) {
+void asteroids::idle_frame(float dt, vec3 next_center, numarray<vec3> const& damaging_position, numarray<float> const& damaging_radius) {
 	tmp_positions.resize_clear(0);
 	tmp_alphas.resize_clear(0);
+	// Looping over all asteroids
 	for (int k = 0; k < N_asteroids; k++) {
+		// Updating destroyed asteroids
 		if (destroyed[k] == 1) {
 			if (inactive_time[k] >= respawn_delay) {
 				positions[k] = center + vec3(rand_uniform(-bound, bound)/2, rand_uniform(-bound, bound)/2, rand_uniform(-bound, bound)/2);
@@ -103,11 +101,11 @@ void asteroids::idle_frame(float dt, vec3 next_center, numarray<vec3> const& las
 				else positions[k] = pz;
 			}
 
-			// Checking colisions with lasers
+			// Checking colisions with objects (e.g lasers)
 			bool is_destroyed = false;
-			for (int l = 0;  l < lasers_position.size(); l++) {
-				float d = norm(positions[k] - lasers_position[l]);
-				if (d < colision_radius[mesh_ref[k]]) {
+			for (int l = 0;  l < damaging_position.size(); l++) {
+				float d = norm(positions[k] - damaging_position[l]);
+				if (d < colision_radius[mesh_ref[k]] + damaging_radius[l]) {
 					destroyed[k] = 1;
 					is_destroyed = true;
 					break;
@@ -145,11 +143,10 @@ void asteroids::idle_frame(float dt, vec3 next_center, numarray<vec3> const& las
 			rotation_transform rT = rotation_transform::from_axis_angle(axis, angle);
 
 			rotations[k] *= rT;
-			// positions[k] += (next_center - center) + velocities[k] * dt;
 			positions[k] += velocities[k] * dt;
 		}
 	}
-	center = next_center;
+	center = next_center; // New center of the bounding box
 	if (tmp_positions.size()>0) smoke.update_supplementary_data_on_gpu(tmp_positions, 4);
 	if (tmp_alphas.size()>0) smoke.update_supplementary_data_on_gpu(tmp_alphas, 5);
 }
@@ -173,7 +170,7 @@ void asteroids::draw(environment_generic_structure const& environment, bool disp
 		}
 	}
 	// Drawing smoke last
-	glEnable(GL_BLEND); // Color Blending
+	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDepthMask(false);
 	cgp::draw(smoke, environment, N_destroyed*N_quad);

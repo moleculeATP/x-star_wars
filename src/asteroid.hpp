@@ -15,21 +15,20 @@ namespace cgp {
 	struct asteroids {
 		int N_asteroids; // Number of asteroids in the scene
 		int N_mesh; // Number of differents asteroid models
-		int bound = 200; // Max distance allowed
-		vec3 center;
-		// vec3 color = vec3(88.0f/255.0f, 57.0f/255.0f, 39.0f/255.0f);
-		vec3 color = vec3(1, 1, 1);
+		int bound = 200; // Length/2 of the cube containing asteroids
+		vec3 center; // Center of the cube
+		vec3 color = vec3(1, 1, 1); // Default color
 		float respawn_delay = 20.0f;
 		perlin_noise_parameters asteroid_perlin_params;
 
-		// Size N_mesh
+		// N_mesh asteroids meshes
 		numarray<mesh> meshes;
 		numarray<mesh> original_meshes;
 		numarray<mesh_drawable> drawables;
 		numarray<float> colision_radius;
 		numarray<float> original_colision_radius;
 
-		// Size N_asteroids
+		// N_asteroids asteroids parameters
 		numarray<vec3> velocities; 
 		numarray<vec3> angular_velocities;
 		numarray<vec3> positions;
@@ -69,7 +68,7 @@ namespace cgp {
 		perlin_noise_parameters debris_perlin_params;
 		
 
-		void idle_frame(float dt, vec3 next_center, numarray<vec3> const& lasers_position);
+		void idle_frame(float dt, vec3 next_center, numarray<vec3> const& damaging_position, numarray<float> const& damaging_radius);
 		void draw(environment_generic_structure const& environment, bool display_wireframe);
 		void apply_perlin(perlin_noise_parameters& asteroid_perlin, perlin_noise_parameters& debris_perlin);
 		void initialize(numarray<vec3> const& asteroid_scales, numarray<vec3> const& debris_scales, int Nuv_asteroids, int Nuv_debris, std::string const& texture_path, opengl_shader_structure const& shader);
