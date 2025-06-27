@@ -1,5 +1,7 @@
 # X-Star-Wars: An X-Wing simulation
 
+![cover](assets/front_page.png)
+
 ## Download
 ```
 git clone --recurse-submodules https://github.com/moleculeATP/x-star_wars.git
